@@ -22,10 +22,11 @@ Exit status: 0 no blocking findings, 1 violations, 2 configuration/data/I/O erro
 Unsupported files and symlinks are skipped. Files above 2,000,000 bytes are
 reported as skipped. Invalid UTF-8 in eligible files is an error.
 
-The default report groups repeated corrections, errors first, with occurrence
-counts and up to three example locations. `--limit` caps correction rows across
-the entire invocation (default 20); compatibility and mixed-spelling findings
-are summarized, not listed. `--json` always includes every finding.
+The default report is an aligned Found / Preferred / Occurrences table with no
+paths or repeated rule labels. Errors appear before advisory warnings in
+separate sections. `--limit` caps correction rows across the entire invocation
+(default 5); compatibility and mixed-spelling findings are summarized, not
+listed. `--json` always includes every finding.
 
 Use `--by file`, `--by concept`, or `--by rule` for detailed diagnostics:
 

@@ -1,5 +1,6 @@
 """File selection and failure policy around the upstream audit engine."""
 import argparse
+from collections import Counter
 import io
 import json
 import os
@@ -19,26 +20,29 @@ def diagnostic(finding):
 
 
 def compact_report(findings, summary, limit):
-    groups = {}
+    groups = Counter()
     for finding in findings:
         if not finding["known"]:
-            key = tuple(finding[k] for k in ("severity", "rule", "found", "canonical"))
-            groups.setdefault(key, []).append(finding)
-    ordered = sorted(groups, key=lambda k: (k[0] != "error", -sum(f["count"] for f in groups[k]), k))
-    print(f"{summary['files_scanned']} files: {summary['errors']} errors, "
-          f"{summary['warnings']} warnings; {len(groups)} distinct corrections")
-    for severity, rule, found, canonical in ordered[:limit]:
-        group = groups[(severity, rule, found, canonical)]
-        count = sum(f["count"] for f in group)
-        locations = list(dict.fromkeys(f"{f['file']}:{f['line']}" for f in group))
-        examples = "; ".join(locations[:3])
-        remaining = f"; +{len(locations) - 3} locations" if len(locations) > 3 else ""
-        print(f"{severity} [{rule}] {found!r} → {canonical!r} ×{count} — {examples}{remaining}")
-    if len(groups) > limit:
-        print(f"… and {len(groups) - limit} more corrections (raise --limit or use --json)")
-    print(f"Advisory: {summary['known']} known compatibility findings; "
-          f"{summary['concepts_mixed']} mixed-spelling concepts. "
-          "Full details: --json or --by file.")
+            key = tuple(finding[k] for k in ("severity", "found", "canonical"))
+            groups[key] += finding["count"]
+    shown = sorted(groups, key=lambda k: (k[0] != "error", -groups[k], k))[:limit]
+    print(f"Quranic terminology\n{summary['files_scanned']} files checked · "
+          f"{summary['errors']} errors · {summary['warnings']} warnings")
+    left = max([len("Found"), *(len(k[1]) for k in shown)])
+    right = max([len("Preferred"), *(len(k[2]) for k in shown)])
+    for severity, title in (("error", "Errors"), ("warning", "Warnings (advisory)")):
+        rows = [k for k in shown if k[0] == severity]
+        if rows:
+            print(f"\n{title}\n{'Found':<{left}}  {'Preferred':<{right}}  Occurrences")
+            print("─" * (left + right + 15))
+            for key in rows:
+                print(f"{key[1]:<{left}}  {key[2]:<{right}}  {groups[key]:>11}")
+    if groups:
+        print(f"\nShowing {len(shown)} of {len(groups)} corrections. Increase --limit to show more.")
+    if summary["known"] or summary["concepts_mixed"]:
+        print(f"Advisory: {summary['known']} known compatibility findings; "
+              f"{summary['concepts_mixed']} mixed-spelling concepts.")
+    print("Use --by file for locations, or --json for all findings.")
 
 
 def configuration(engine, explicit):
@@ -98,10 +102,12 @@ def main(argv=None):
     parser.add_argument("--config")
     parser.add_argument("--json", action="store_true")
     parser.add_argument("--by", choices=("compact", "file", "concept", "rule"), default="compact")
-    parser.add_argument("--limit", type=int, default=20,
+    parser.add_argument("--limit", type=int, default=None,
                         help="maximum correction rows in compact mode; findings per group in detailed modes")
     parser.add_argument("--version", action="version", version=version("quranic-terminology-lint"))
     args = parser.parse_args(argv)
+    if args.limit is None:
+        args.limit = 5 if args.by == "compact" else 20
     try:
         if args.limit < 1:
             raise ValueError("--limit must be positive")
@@ -135,7 +141,7 @@ def main(argv=None):
             else:
                 engine.line_of = diagnostic
                 engine.report(findings, mixed, summary, args.by, args.limit)
-            if reference_count:
+            if reference_count and args.by != "compact":
                 print(f"{reference_count} resource references skipped")
             for path in skipped[:args.limit]:
                 print(f"skipped (larger than {engine.MAX_BYTES} bytes): {path}", file=sys.stderr)

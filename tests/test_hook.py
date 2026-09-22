@@ -41,7 +41,9 @@ def test_real_pre_commit(tmp_path):
     model.write_text("sura = 1\n")
     run(consumer, "git", "add", ".")
     rejected = run(consumer, "git", "commit", "-m", "Rejected", expected=1)
-    assert "error [spelling] 'sura' → 'surah' ×1 — a space.py:1" in rejected.stdout + rejected.stderr
+    output = rejected.stdout + rejected.stderr
+    assert "Occurrences" in output
+    assert any(line.split() == ["sura", "surah", "1"] for line in output.splitlines())
     # A clean working copy must not hide an invalid staged version.
     model.write_text("surah = 1\n")
     run(consumer, "git", "commit", "-m", "Still rejected", expected=1)

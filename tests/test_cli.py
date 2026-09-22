@@ -181,11 +181,10 @@ def test_compact_report_global_limit_and_complete_json(capsys):
         Path(f"model{number}.py").write_text("aya = 1\nsura = 2\nverse = 3\n")
     assert cli.main([".", "--limit", "1"]) == 1
     output = capsys.readouterr().out
-    assert len(output.splitlines()) == 4
-    assert "60 errors, 30 warnings; 3 distinct corrections" in output
-    assert "error [spelling] 'aya' → 'ayah' ×30" in output
-    assert "+27 locations" in output
-    assert "2 more corrections" in output
+    assert "60 errors · 30 warnings" in output
+    assert any(line.split() == ["aya", "ayah", "30"] for line in output.splitlines())
+    assert "model" not in output and "[spelling]" not in output
+    assert "Showing 1 of 3 corrections" in output
     assert cli.main([".", "--limit", "1", "--json"]) == 1
     report = json.loads(capsys.readouterr().out)
     assert len(report["findings"]) == 90
@@ -196,6 +195,26 @@ def test_compact_advisories_are_bounded(capsys):
     Path(".terminology.json").write_text('{"compatibility": ["model.py"]}')
     assert cli.main(["."]) == 0
     output = capsys.readouterr().out
-    assert len(output.splitlines()) == 2
+    assert len(output.splitlines()) == 4
     assert "1 known compatibility findings" in output
     assert "1 mixed-spelling concepts" in output
+
+
+def test_table_default_limit_and_warning_section(capsys):
+    Path("model.py").write_text("aya = sura = basmala = istiadha = riwaya = tarteel = verse = 1")
+    assert cli.main(["."]) == 1
+    output = capsys.readouterr().out
+    assert "Showing 5 of 7 corrections" in output
+    assert "Warnings (advisory)" not in output
+    assert cli.main([".", "--limit", "7"]) == 1
+    output = capsys.readouterr().out
+    assert output.index("Errors") < output.index("Warnings (advisory)")
+    assert any(line.split() == ["verse", "ayah", "1"] for line in output.splitlines())
+
+
+def test_clean_table_has_no_empty_headers(capsys):
+    Path("model.py").write_text("ayah = 1")
+    assert cli.main(["."]) == 0
+    output = capsys.readouterr().out
+    assert "0 errors · 0 warnings" in output
+    assert "Occurrences" not in output
