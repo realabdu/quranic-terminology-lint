@@ -18,6 +18,29 @@ def diagnostic(finding):
             f"({finding['display']}) [{finding['layer']}]")
 
 
+def compact_report(findings, summary, limit):
+    groups = {}
+    for finding in findings:
+        if not finding["known"]:
+            key = tuple(finding[k] for k in ("severity", "rule", "found", "canonical"))
+            groups.setdefault(key, []).append(finding)
+    ordered = sorted(groups, key=lambda k: (k[0] != "error", -sum(f["count"] for f in groups[k]), k))
+    print(f"{summary['files_scanned']} files: {summary['errors']} errors, "
+          f"{summary['warnings']} warnings; {len(groups)} distinct corrections")
+    for severity, rule, found, canonical in ordered[:limit]:
+        group = groups[(severity, rule, found, canonical)]
+        count = sum(f["count"] for f in group)
+        locations = list(dict.fromkeys(f"{f['file']}:{f['line']}" for f in group))
+        examples = "; ".join(locations[:3])
+        remaining = f"; +{len(locations) - 3} locations" if len(locations) > 3 else ""
+        print(f"{severity} [{rule}] {found!r} → {canonical!r} ×{count} — {examples}{remaining}")
+    if len(groups) > limit:
+        print(f"… and {len(groups) - limit} more corrections (raise --limit or use --json)")
+    print(f"Advisory: {summary['known']} known compatibility findings; "
+          f"{summary['concepts_mixed']} mixed-spelling concepts. "
+          "Full details: --json or --by file.")
+
+
 def configuration(engine, explicit):
     path = engine.find_config([str(Path.cwd())], explicit)
     if path:
@@ -74,8 +97,9 @@ def main(argv=None):
     parser.add_argument("paths", nargs="*")
     parser.add_argument("--config")
     parser.add_argument("--json", action="store_true")
-    parser.add_argument("--by", choices=("file", "concept", "rule"), default="file")
-    parser.add_argument("--limit", type=int, default=20)
+    parser.add_argument("--by", choices=("compact", "file", "concept", "rule"), default="compact")
+    parser.add_argument("--limit", type=int, default=20,
+                        help="maximum correction rows in compact mode; findings per group in detailed modes")
     parser.add_argument("--version", action="version", version=version("quranic-terminology-lint"))
     args = parser.parse_args(argv)
     try:
@@ -102,16 +126,21 @@ def main(argv=None):
         summary = engine.summarise(findings, mixed, counted, data, cfg)
         summary["skipped_large_files"] = skipped
         summary["reference_literals"] = reference_count
+        summary["terminology_overrides"] = {"word_timing": "word_timestamp"}
         if args.json:
             print(json.dumps({"summary": summary, "findings": findings, "mixed": mixed}, ensure_ascii=False))
         else:
-            # Keep upstream grouping, limits, and advisory sections unchanged.
-            engine.line_of = diagnostic
-            engine.report(findings, mixed, summary, args.by, args.limit)
+            if args.by == "compact":
+                compact_report(findings, summary, args.limit)
+            else:
+                engine.line_of = diagnostic
+                engine.report(findings, mixed, summary, args.by, args.limit)
             if reference_count:
                 print(f"{reference_count} resource references skipped")
-            for path in skipped:
+            for path in skipped[:args.limit]:
                 print(f"skipped (larger than {engine.MAX_BYTES} bytes): {path}", file=sys.stderr)
+            if len(skipped) > args.limit:
+                print(f"… {len(skipped) - args.limit} more large files skipped (see --json)", file=sys.stderr)
         return int(bool(summary["errors"]))
     except (OSError, ValueError, KeyError, TypeError, AttributeError, SyntaxError) as exc:
         print(f"quranic-terminology-lint: {exc}", file=sys.stderr)

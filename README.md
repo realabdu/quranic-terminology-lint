@@ -22,14 +22,19 @@ Exit status: 0 no blocking findings, 1 violations, 2 configuration/data/I/O erro
 Unsupported files and symlinks are skipped. Files above 2,000,000 bytes are
 reported as skipped. Invalid UTF-8 in eligible files is an error.
 
-Text diagnostics include the location, severity, rule, and suggested spelling:
+The default report groups repeated corrections, errors first, with occurrence
+counts and up to three example locations. `--limit` caps correction rows across
+the entire invocation (default 20); compatibility and mixed-spelling findings
+are summarized, not listed. `--json` always includes every finding.
+
+Use `--by file`, `--by concept`, or `--by rule` for detailed diagnostics:
 
 ```text
 model.py:1: error [spelling] 'aya' → 'ayah' in 'aya_number' (Ayah) [internal]
 ```
 
-Use `--by file`, `--by concept`, or `--by rule` to group findings, and `--limit`
-to control findings shown per group. Compatibility findings remain in a
+In these explicit detailed modes, `--limit` controls findings per group.
+Compatibility findings remain in a
 separate non-blocking section. `--json` retains the upstream finding fields.
 
 The adapter treats ordinary `timing` as ambiguous (advisory in code, permitted
@@ -44,6 +49,13 @@ tokenization fails, the file is still linted without automatic reference
 exemptions. Other languages retain lexical reference handling.
 Neither approach can infer every external organization or proper name;
 use `external_names` for those. Bundled upstream rules and data stay unchanged.
+
+Local naming override: `word_timestamp` / `word_timestamps` replaces
+`word_timing` / `word_timings` for word-level audio spans. The old names are
+reported, including camelCase and PascalCase forms. Ayah-level and ordinary
+timing are unchanged. The adapter preserves the upstream `word_timing` concept
+key and snapshot bytes; JSON `summary.terminology_overrides` records the naming
+difference. This is a local maintainer decision, not an upstream standard update.
 
 ## pre-commit
 
@@ -73,7 +85,7 @@ pre-commit install --hook-type pre-commit --hook-type pre-push --hook-type pre-m
 ```
 
 The separate [Quranic Terminology skill](https://github.com/realabdu/quranic-terminology)
-provides contextual AI-assisted audits and edits. Its 65-concept vocabulary
+provides contextual AI-assisted audits and edits. Its 66-concept vocabulary
 differs from this hook's bundled 180-entry snapshot; identical decisions are
 not currently guaranteed.
 

@@ -13,9 +13,17 @@ RESOURCE_SUFFIXES = {".svg", ".png", ".jpg", ".jpeg", ".webp", ".pdf", ".zip",
 
 
 def prepare_index(engine, data, ignore_words):
+    # Maintainer-approved local naming override; preserve upstream concept identity.
+    data["concepts"]["word_timing"].update(
+        code="word_timestamp", display="Word Timestamp", plural="word_timestamps")
     # Reuse upstream generic-word severity: advisory in code, allowed in prose.
     engine.GENERIC_WORDS = engine.GENERIC_WORDS | AMBIGUOUS_WORDS
     index = engine.build_index(data, ignore_words)
+    ignored = {form.lower().replace("-", "_").replace(" ", "_")
+               for word in ignore_words for form in (word, word + "s")}
+    for form in ("word_timing", "word_timings"):
+        if form not in ignored:
+            index[form] = ("spelling", "word_timing", "word_timing")
     # Consider a complete canonical compound before a deprecated short prefix.
     longest = max((len(form.split("_")) for form in index), default=4)
     upstream_ngrams = engine.ngrams

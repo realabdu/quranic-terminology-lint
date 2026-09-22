@@ -158,12 +158,12 @@ def test_text_diagnostics(capsys, by):
 
 def test_text_limit_and_compatibility(capsys):
     Path("model.py").write_text("aya = 1\nsura = 2\n")
-    assert cli.main(["model.py", "--limit", "1"]) == 1
+    assert cli.main(["model.py", "--by", "file", "--limit", "1"]) == 1
     output = capsys.readouterr().out
     assert output.count(": error [spelling]") == 1
     assert "and 1 more" in output
     Path(".terminology.json").write_text('{"compatibility": ["model.py"]}')
-    assert cli.main(["model.py"]) == 0
+    assert cli.main(["model.py", "--by", "file"]) == 0
     output = capsys.readouterr().out
     assert "2 on a compatibility surface — known" in output
     assert ": error [" not in output
@@ -174,3 +174,28 @@ def test_diagnostic_keeps_repeated_occurrences():
                "found": "aya", "canonical": "ayah", "identifier": "aya",
                "count": 2, "display": "Ayah", "layer": "internal"}
     assert cli.diagnostic(finding).endswith("in 'aya' ×2 (Ayah) [internal]")
+
+
+def test_compact_report_global_limit_and_complete_json(capsys):
+    for number in range(30):
+        Path(f"model{number}.py").write_text("aya = 1\nsura = 2\nverse = 3\n")
+    assert cli.main([".", "--limit", "1"]) == 1
+    output = capsys.readouterr().out
+    assert len(output.splitlines()) == 4
+    assert "60 errors, 30 warnings; 3 distinct corrections" in output
+    assert "error [spelling] 'aya' → 'ayah' ×30" in output
+    assert "+27 locations" in output
+    assert "2 more corrections" in output
+    assert cli.main([".", "--limit", "1", "--json"]) == 1
+    report = json.loads(capsys.readouterr().out)
+    assert len(report["findings"]) == 90
+
+
+def test_compact_advisories_are_bounded(capsys):
+    Path("model.py").write_text("aya = 1\nayah = 2\n")
+    Path(".terminology.json").write_text('{"compatibility": ["model.py"]}')
+    assert cli.main(["."]) == 0
+    output = capsys.readouterr().out
+    assert len(output.splitlines()) == 2
+    assert "1 known compatibility findings" in output
+    assert "1 mixed-spelling concepts" in output

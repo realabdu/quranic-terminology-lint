@@ -101,3 +101,28 @@ def test_python_executable_or_unparsed_names_still_fail(tmp_path, monkeypatch, c
     assert status == 1
     assert result["summary"]["reference_literals"] == 0
     assert any(f["found"] == found for f in result["findings"])
+
+
+@pytest.mark.parametrize("name", ["word_timestamp", "word_timestamps", "wordTimestamp", "WordTimestamps", "WORD_TIMESTAMP"])
+def test_word_timestamp_canonical(tmp_path, monkeypatch, capsys, name):
+    status, result = audit(tmp_path, monkeypatch, capsys, f"{name} = 1", "model.py")
+    assert status == 0 and not result["findings"]
+    assert result["summary"]["terminology_overrides"] == {"word_timing": "word_timestamp"}
+
+
+@pytest.mark.parametrize("name", ["word_timing", "word_timings", "wordTiming", "WordTimings", "WORD_TIMING"])
+def test_word_timing_legacy(tmp_path, monkeypatch, capsys, name):
+    status, result = audit(tmp_path, monkeypatch, capsys, f"{name} = 1", "model.py")
+    assert status == 1
+    assert len(result["findings"]) == 1
+    assert result["findings"][0]["canonical"] == "word_timestamp"
+    assert result["findings"][0]["concept"] == "word_timing"  # Stable upstream identity.
+
+
+def test_word_timing_ignore_and_unrelated_timing(tmp_path, monkeypatch, capsys):
+    monkeypatch.chdir(tmp_path)
+    Path(".terminology.json").write_text('{"ignore_words": ["word_timing"]}')
+    status, result = audit(tmp_path, monkeypatch, capsys,
+                           "word_timing = 1\nword_timings = 2\nayah_timing = 3", "model.py")
+    assert status == 0
+    assert not any(f["canonical"] == "word_timestamp" or f["line"] == 3 for f in result["findings"])
