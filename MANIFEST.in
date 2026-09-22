@@ -1,0 +1,5 @@
+include .pre-commit-hooks.yaml .terminology.json
+recursive-include tools *.py
+recursive-include examples *.py
+global-exclude *.pyc
+global-exclude __pycache__

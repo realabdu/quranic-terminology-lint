@@ -1,0 +1,10 @@
+- id: quranic-terminology
+  name: Quranic terminology
+  description: Check files against a bundled Quran.ws terminology snapshot
+  entry: quranic-terminology-lint
+  language: python
+  types: [text]
+  pass_filenames: true
+  require_serial: true
+  minimum_pre_commit_version: '3.2.0'
+  stages: [pre-commit, pre-merge-commit, pre-push, manual]

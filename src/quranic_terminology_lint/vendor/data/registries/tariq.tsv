@@ -1,0 +1,38 @@
+# The tariqs applications actually name — طرق الأداء المشهورة.
+#
+# `tariq` is the concept and has its dictionary entry: the path of transmission
+# below the rawi. Al-Nashr names some 980 of them for the 10 readings, and that
+# enumeration is not here (the note at the head of registries/qiraat.tsv says
+# what was tried and why it was not kept). This registry is the narrower thing
+# an application stores: a Hafs recording or a Mushaf is labelled «من طريق
+# الشاطبية» or «من طريق طيبة النشر», and the lengths of madd and the ghunnah
+# follow that label. Four named routes cover what is stored in practice.
+#
+# A ROUTE NAMED AFTER A BOOK IS STILL A ROUTE
+# Each of the four is a book, and the reading is said to be «من طريق» that book:
+# the book fixes which of the paths below the rawi are being followed, and the
+# name of the book has become the name of that path. That is the sense the
+# dictionary's `tariq` entry gives — a finer level than the riwayah that tells
+# paths of delivery apart — and it is the sense a recording's label carries. So
+# the rows are filed under `tariq`, and `kind` says what each one is a route of.
+#
+# `covers` names the readings the book transmits: the seven (al-Shatibiyyah,
+# al-Taysir), the three that complete the ten (al-Durrah), or all ten
+# (Tayyibat al-Nashr). `qiraat` lists them as codes in registries/qiraat.tsv.
+#
+# THE CODES ARE DERIVED
+# A book's title is a word with a meaning, so it is derived from its Arabic by
+# tools/translit.py like every other term (section 13: only a person's name is
+# exempt). `alternative_spellings` carries the forms in use.
+#
+# `ref` cites al-Nashr, ed. al-Dabba, as volume/page: 1/58 is where Ibn al-Jazari
+# lists al-Taysir among the works he transmits from, and 1/61 al-Shatibiyyah.
+# Al-Durrah and al-Tayyibah are his own later works and al-Nashr does not cite
+# them; the editor's introduction names both among his writings, and
+# `muqaddimah/7` is that page.
+#
+# code	arabic	display	kind	author	covers	qiraat	alternative_spellings	ref
+shatibiyyah	الشَّاطِبِيَّة	Al-Shatibiyyah	qasidah	القَاسِم بْن فِيرُّه الشَّاطِبِيّ	seven	nafi,ibn_kathir,abu_amr,ibn_amir,asim,hamzah,kisai	shatibiyya,shatibiyah,shatibi,al_shatibiyyah,al-shatibiyyah,tariq_al_shatibiyyah,hirz_al_amani	nashr 1/61
+tayyibat_al_nashr	طَيِّبَة النَّشْر	Tayyibat al-Nashr	qasidah	اِبْن الجَزَرِيّ	ten	nafi,ibn_kathir,abu_amr,ibn_amir,asim,hamzah,kisai,abu_jafar,yaqub,khalaf_al_ashir	tayyibah,tayyiba,taybah,al_tayyibah,al-tayyibah,tayyibat_al_nashr,tariq_al_tayyibah	nashr muqaddimah/7
+durrah	الدُّرَّة	Al-Durrah	qasidah	اِبْن الجَزَرِيّ	three	abu_jafar,yaqub,khalaf_al_ashir	durra,al_durrah,al-durrah,durrat_al_mudiyyah,al_durrah_al_mudiyyah,tariq_al_durrah	nashr muqaddimah/7
+taysir	التَّيْسِير	Al-Taysir	book	أَبُو عَمْرو الدَّانِيّ	seven	nafi,ibn_kathir,abu_amr,ibn_amir,asim,hamzah,kisai	tayseer,al_taysir,al-taysir,tariq_al_taysir	nashr 1/58

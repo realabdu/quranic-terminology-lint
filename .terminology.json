@@ -1,0 +1,6 @@
+{
+  "paths": ["src/quranic_terminology_lint"],
+  "exclude": ["src/quranic_terminology_lint/vendor/**", "tests/**", "examples/failing/**"],
+  "ignore_words": ["parts"],
+  "_comment": "Upstream dictionaries and deliberate test violations are not project naming mistakes. The word parts denotes filesystem path components here, not juz."
+}

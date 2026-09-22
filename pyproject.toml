@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "quranic-terminology-lint"
+version = "0.1.0"
+description = "Offline Quranic terminology checks for code, CI, and pre-commit"
+requires-python = ">=3.10"
+readme = "README.md"
+license = "MIT AND CC-BY-4.0"
+license-files = ["LICENSE", "NOTICE"]
+dependencies = []
+
+[project.scripts]
+quranic-terminology-lint = "quranic_terminology_lint.cli:main"
+
+[project.optional-dependencies]
+test = ["pytest>=8", "pre-commit>=3.2", "build"]
+
+[tool.setuptools]
+include-package-data = false
+
+[tool.setuptools.packages.find]
+where = ["src"]
+namespaces = false
+
+[tool.setuptools.package-data]
+quranic_terminology_lint = ["vendor/LICENSE", "vendor/provenance.json", "vendor/LICENSES/*.txt", "vendor/data/*.json", "vendor/data/registries/*.tsv", "vendor/scripts/*.py"]
+
+[tool.setuptools.exclude-package-data]
+"*" = ["**/__pycache__/*", "**/*.pyc"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

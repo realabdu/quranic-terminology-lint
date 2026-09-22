@@ -1,0 +1,1 @@
+"""Quranic terminology hook integration."""
