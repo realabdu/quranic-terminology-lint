@@ -53,7 +53,7 @@ immutable commit SHA for reproducible checks:
 ```yaml
 repos:
   - repo: https://github.com/realabdu/quranic-terminology-lint
-    rev: <pinned-commit-sha>
+    rev: 3188bc72b2795b2ad133b445a67ee45a93fbaa4d
     hooks:
       - id: quranic-terminology
         files: ^(src|app|database|data)/
