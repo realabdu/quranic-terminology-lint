@@ -4,8 +4,8 @@
 # display         the name readers see (rule 038)
 # origin          quranic: a transliterated Arabic term (rule 002); borrowed: a
 #                 compound mixing both (rule 004); standard: a general concept
-#                 with an English name (rule 003). Spelling rules apply to the
-#                 first two only.
+#                 with an English name (rule 003). In mixed names, spelling
+#                 rules apply only to the Arabic components.
 # plural          only when it is not code + "s" (rule 049)
 # arabic          the vocalised Arabic name (rule 039)
 # other_spellings names that no rule predicts, reported as rule 001
@@ -25,7 +25,7 @@ ayah_fragment	Ayah Fragment	standard		مَقْطَع الآيَة	ayah_segment,a
 ayah_key	Ayah Key	standard			ayah_ref,ayah_reference	verse_key		
 ayah_mark	Ayah Mark	quranic		عَلَامَة الآيَة	end_of_ayah,ayah_marker,ayah_separator			
 ayah_numbering_system	Ayah Numbering System	standard		نِظَام عَدّ الآي	ayah_counting_system			
-ayah_timing	Ayah Timing	standard			ayah_timestamp,recitation_timing,timing,verse_timing			
+ayah_timing	Ayah Timing	standard			ayah_timestamp,recitation_timing,timing	verse_timing		
 basmalah	Basmalah	quranic		البَسْمَلَة	bismillah			
 character	Character	borrowed						
 codepoint	Codepoint	borrowed						

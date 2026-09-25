@@ -79,6 +79,34 @@ def test_ignore_words():
     assert rules.check("surah", terms) == []
 
 
+@pytest.mark.parametrize("identifier", ["at_token", "atToken", "el_page", "alLine", "liine", "al_character"])
+def test_english_concepts_do_not_receive_arabic_spelling_rules(identifier):
+    assert check(identifier) == []
+
+
+@pytest.mark.parametrize("identifier", ["ayaEnding", "suraObjectives", "ayaKey"])
+def test_arabic_components_in_mixed_names_still_checked(identifier):
+    assert any(severity == "error" for _, _, _, severity in check(identifier))
+
+
+@pytest.mark.parametrize("identifier", ["aya", "ayas", "ayaKey", "aya_key", "AYA_KEY", "getAyaNo"])
+def test_ignored_words_inside_identifiers(identifier):
+    assert rules.check(identifier, rules.Terms(ignore_words=["aya"])) == []
+
+
+def test_ignored_words_do_not_hide_other_mistakes():
+    findings = rules.check("ayaKeySura", rules.Terms(ignore_words=["aya"]))
+    assert [f["found"] for f in findings] == ["sura"]
+    assert rules.check("ayat", rules.Terms(ignore_words=["aya"]))
+
+
+def test_ignored_compound_respects_word_boundaries_and_case():
+    terms = rules.Terms(ignore_words=["ayaKey"])
+    assert rules.check("get_aya_key", terms) == []
+    assert rules.check("ayaKeys", terms) == []
+    assert rules.check("ayaNumber", terms)
+
+
 def test_rules_predict_spellings_so_the_term_files_do_not_list_them():
     concepts = rules.read_table(rules.TERMS / "concepts.tsv")
     listed = {form for row in concepts for form in rules.items(row["other_spellings"])}

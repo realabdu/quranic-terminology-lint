@@ -171,7 +171,7 @@ def derived_forms(term, arabic_words):
     inside it is still spelled by the rules: `aya_key` for `ayah_key`.
     """
     parts = term.code.split("_")
-    general = term.origin == "standard"
+    general = term.origin != "quranic"
     options = []
     for i, part in enumerate(parts):
         following = parts[i + 1] if i + 1 < len(parts) else ""
@@ -210,13 +210,12 @@ class Terms:
         for term in terms:  # A bare name refers to the concept (rule 058).
             self.index.setdefault(term.code, Hit(term))
             self.index.setdefault(term.plural, Hit(term, plural=True))
-        canonical = set(self.index)
         for row, term in concepts:
             for form in items(row["former_names"]):
                 self.put(form, Hit(term, ("046",)))
             for form in items(row["arabic_plurals"]):
                 self.put(form, Hit(term, ("049",), plural=True))
-        arabic_words = {t.code for t in terms if t.origin != "standard" and "_" not in t.code}
+        arabic_words = {t.code for t in terms if t.origin == "quranic" and "_" not in t.code}
         for term in terms:
             single = "_" not in term.code
             for form, rules in derived_forms(term, arabic_words).items():
@@ -238,10 +237,8 @@ class Terms:
         for form, hit in list(self.index.items()):  # rule 049: plurals add `s`
             if hit.rules:
                 self.put(form + "s", Hit(hit.term, hit.rules, hit.warning, True, hit.gloss))
-        for word in ignore_words:
-            for form in (key(word), key(word) + "s"):
-                if form not in canonical:
-                    self.index.pop(form, None)
+        self.ignored = {tuple(plain(p) for p in split(form))
+                        for word in ignore_words for form in (word, word + "s") if word.strip()}
         self.longest = max(len(form.split("_")) for form in self.index)
         self.concepts = len(concepts)
 
@@ -278,7 +275,12 @@ def check(identifier, terms, prose=False):
         return []  # A Unicode character name, `ARABIC FATHA`, is kept as given (rule 043).
     raw = split(identifier)
     parts = [plain(p) for p in raw]
-    taken, matched, out = set(), [], []
+    ignored = set()
+    for word in terms.ignored:
+        for start in range(len(parts) - len(word) + 1):
+            if tuple(parts[start:start + len(word)]) == word:
+                ignored.update(range(start, start + len(word)))
+    taken, matched, out = ignored.copy(), [], []
     for size in range(min(terms.longest, len(parts)), 0, -1):
         for start in range(len(parts) - size + 1):
             span = set(range(start, start + size))
@@ -310,7 +312,7 @@ def check(identifier, terms, prose=False):
     if prose:
         return out
     for start, end, hit in matched:
-        if hit.term.kind != "concept" or hit.term.origin != "quranic" or end >= len(parts):
+        if hit.term.kind != "concept" or hit.term.origin != "quranic" or end >= len(parts) or end in ignored:
             continue
         code, after, written = hit.term.code, parts[end], "_".join(raw[start:end + 1])
         if after == "type" and not code.endswith("_mark"):
@@ -369,7 +371,6 @@ def fix(identifier, findings):
         for i in range(len(words) - size + 1):
             if "_".join(words[i:i + size]) == f["found"]:
                 edits.append((spans[i][0], spans[i + size - 1][1], f["preferred"]))
-                break
     if not edits:
         return None
     kept = []  # Where two fixes overlap (`sura`, `sura_num`), the longer one wins.
