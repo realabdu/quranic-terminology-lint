@@ -127,7 +127,7 @@ def shown(path):
     return rel if not rel.startswith("..") else str(path)
 
 
-def scan(files, terms, cfg, fix=False):
+def scan(files, terms, cfg, unsafe_fixes=False):
     findings, renames = {}, []
     counted = Counter()
     for path in files:
@@ -141,9 +141,9 @@ def scan(files, terms, cfg, fix=False):
         prose = suffix in PROSE_SUFFIXES
         spans = {} if prose else prose_ranges(text, suffix)
         names = data_names(text, suffix)
-        literals = string_ranges(text, suffix) if fix and not prose else {}
-        editable = editable_prose(text, suffix) if fix else {}
-        code_spans = fixing.code_spans(text, fenced=prose) if fix else {}
+        literals = string_ranges(text, suffix) if unsafe_fixes and not prose else {}
+        editable = editable_prose(text, suffix) if unsafe_fixes else {}
+        code_spans = fixing.code_spans(text, fenced=prose) if unsafe_fixes else {}
         text, references = mask_references(text, prose, external=cfg["external"], suffix=suffix)
         counted["reference_literals"] += references
         counted["files_scanned"] += 1
@@ -185,7 +185,7 @@ def scan(files, terms, cfg, fix=False):
                                       **found, "known": known, "count": 1,
                                       "suggested_identifier": suggestion if rules.fixable(found) else None}
                 safe_prose = inside(safe_notes, column)
-                if not fix or known or (strings is None and not safe_prose):
+                if not unsafe_fixes or known or (strings is None and not safe_prose):
                     continue
                 if strings is not None and inside(strings, column):
                     continue  # Strings hold data, keys and paths: never edited.
@@ -198,8 +198,7 @@ def scan(files, terms, cfg, fix=False):
                 # Prose detected heuristically may really be executable code or literal data.
                 if prose and not safe_prose:
                     continue
-                renames.append(fixing.Rename(path, number, column, identifier, renamed,
-                                            safe_prose))
+                renames.append(fixing.Rename(path, number, column, identifier, renamed))
     return sorted(findings.values(), key=lambda f: (f["file"], f["line"], f["identifier"])), counted, renames
 
 
@@ -247,16 +246,9 @@ def detailed(findings, summary, limit):
     print(f"{summary['errors']} errors, {summary['warnings']} warnings in {summary['files_scanned']} files")
 
 
-def report_fixes(applied, held, fixed_files):
+def report_fixes(applied, fixed_files):
     if applied:
         print(f"\nFixed {len(applied)} names in {fixed_files} files. Review the changes, then stage them.")
-    if held:
-        names = sorted({r.old for r in held})
-        shown_names = ", ".join(names[:5]) + (f" and {len(names) - 5} more" if len(names) > 5 else "")
-        why = ("Code names may be imports, public APIs, or collide with other bindings. "
-               "Automatic code renames require explicit unsafe opt-in.")
-        print(f"Not renamed: {shown_names}. {why} "
-              "Rename them with your editor's rename refactoring, or run with --unsafe-fixes.")
 
 
 def main(argv=None):
@@ -267,10 +259,8 @@ def main(argv=None):
     parser.add_argument("--by", choices=("table", "file"), default="file")
     parser.add_argument("--limit", type=int, default=None,
                         help="rows to show (default: 20 by file, 10 in the table)")
-    parser.add_argument("--fix", action="store_true",
-                        help="correct plain words in supported documentation and Python comments")
     parser.add_argument("--unsafe-fixes", action="store_true",
-                        help="also text-rename code in supported syntax; may break bindings, APIs and references")
+                        help="apply supported replacements in code and prose; may break bindings, APIs and references")
     parser.add_argument("--version", action="version", version=version("quranic-terminology-lint"))
     args = parser.parse_args(argv)
     try:
@@ -283,9 +273,7 @@ def main(argv=None):
         files, skipped = select(paths, cfg)
         if not files and not args.json:
             print("note: no eligible files (excluded, unsupported, or symlinked)", file=sys.stderr)
-        args.fix = args.fix or args.unsafe_fixes
-        findings, counted, renames = scan(files, terms, cfg, fix=args.fix)
-        applied, held = fixing.select(renames, args.unsafe_fixes)
+        findings, counted, applied = scan(files, terms, cfg, unsafe_fixes=args.unsafe_fixes)
         fixed_files = fixing.write(applied) if applied else 0
         live = [f for f in findings if not f["known"]]
         summary = {
@@ -300,7 +288,6 @@ def main(argv=None):
             "skipped_large_files": [shown(p) for p in skipped],
             "fixed_names": len(applied),
             "fixed_files": fixed_files,
-            "held_back": len(held),
             "concepts": terms.concepts,
             "config": cfg["file"],
         }
@@ -308,8 +295,8 @@ def main(argv=None):
             print(json.dumps({"summary": summary, "findings": findings}, ensure_ascii=False))
         else:
             (table if args.by == "table" else detailed)(findings, summary, limit)
-            if args.fix:
-                report_fixes(applied, held, fixed_files)
+            if args.unsafe_fixes:
+                report_fixes(applied, fixed_files)
             if skipped:
                 more = f" and {len(skipped) - 3} more" if len(skipped) > 3 else ""
                 print(f"skipped {len(skipped)} files larger than {MAX_BYTES // 1_000_000} MB: "

@@ -25,47 +25,55 @@ Add one of the two hooks to your project's `.pre-commit-config.yaml`, then run
 ```yaml
 repos:
   - repo: https://github.com/realabdu/quranic-terminology-lint
-    rev: v0.2.1
+    rev: v0.3.0
     hooks:
       - id: quranic-terminology
 ```
 
-**Check and fix prose.** Use this hook to also correct plain words such as
-`the aya list` → `the ayah list`. Review and stage the changes before retrying
-the commit.
+**Unsafe fix.** Opt in to automatic replacements with this hook:
 
 ```yaml
-      - id: quranic-terminology-fix
+repos:
+  - repo: https://github.com/realabdu/quranic-terminology-lint
+    rev: v0.3.0
+    hooks:
+      - id: quranic-terminology-unsafe-fix
 ```
 
-`--fix` corrects plain words in Python comments and plain Markdown/text
-(`.md`, `.txt`). Code identifiers are reported but never automatically renamed,
-even when newly added or moved between files. Use your editor's rename
-refactoring for identifiers.
+This applies textual code renames in Python and simple JavaScript/TypeScript
+(`.js`, `.ts`, `.mjs`, `.cjs`), plus supported prose corrections. Code renames
+can break imports, exports, bindings and references stored in strings. The tool
+does not perform scope analysis or prevent name collisions. Review the diff,
+run your tests and stage the changes before retrying the commit. Use your
+editor's rename refactoring when a change needs to follow code relationships.
 
-The prose fixer skips fenced and indented examples, block quotes, Markdown
-lines containing backticks, camelCase names, strings, data and compatibility
-paths. Documentation with HTML, template braces or front matter is left alone.
-MDX, XML, other documentation formats and comments in other languages are
-checked but not automatically corrected. Use `exclude` for copied texts and
-notices that must remain exactly as supplied.
+Unsafe fix still skips strings, JSON/CSV/TSV data, file names, compatibility
+paths, and unsupported or ambiguous syntax. This includes JavaScript template
+literals, regex/division syntax, unfinished strings, JSX/TSX and other languages.
+Python interpolation and malformed syntax are handled conservatively; exact
+fix availability can differ between Python versions.
 
-**Explicit unsafe code renames.** `--unsafe-fixes` also applies textual code
-renames in Python and simple JavaScript/TypeScript (`.js`, `.ts`, `.mjs`, `.cjs`).
-This can break imports, exports, bindings and references stored in strings.
-It does not perform scope analysis or prevent name collisions. Review the diff
-and run your tests; this is not a refactoring engine.
+Prose corrections cover plain words in Python comments and supported
+Markdown/text (`.md`, `.txt`). Fenced and indented examples, block quotes,
+Markdown lines containing backticks, and camelCase words in prose are left
+alone. Documentation with HTML, template braces or front matter is skipped.
+MDX, XML and other unsupported formats can produce findings without edits.
+Use `exclude` for copied texts and notices that must remain exactly as supplied.
 
-```yaml
-      - id: quranic-terminology-fix
-        args: [--unsafe-fixes]
-```
+### Migrating from v0.2.1
 
-Files with unsupported or ambiguous syntax are left unchanged: this includes
-JavaScript template literals, regex/division syntax, unfinished strings, JSX/TSX
-and other languages. Python interpolation and malformed syntax are handled
-conservatively; exact fix availability can differ between Python versions.
-Strings, JSON/CSV/TSV data and file names are not renamed in either fix mode.
+Version 0.3.0 removes the prose-only `--fix` option and the
+`quranic-terminology-fix` hook. They are **not aliases** for unsafe fix: an old
+configuration fails instead of silently opting in to code renames.
+
+- To keep checking without automatic edits, use `quranic-terminology` and
+  remove `--fix` from any arguments or scripts.
+- To opt in to automatic edits, use `quranic-terminology-unsafe-fix` or pass
+  `--unsafe-fixes` to the CLI. No extra hook arguments are needed.
+
+The JSON summary retains `fixed_names` and `fixed_files`; the obsolete
+`held_back` field has been removed. Skipped or unsupported findings still
+appear in the report; unsafe fix does not promise to resolve every finding.
 
 To check the whole project once, run
 `pre-commit run quranic-terminology --all-files`.
@@ -73,12 +81,11 @@ To check the whole project once, run
 To run it directly or in CI:
 
 ```sh
-pip install git+https://github.com/realabdu/quranic-terminology-lint@v0.2.1
+pip install git+https://github.com/realabdu/quranic-terminology-lint@v0.3.0
 quranic-terminology-lint                # configured paths, or the current directory
 quranic-terminology-lint src --by table # group findings by terminology rule
 quranic-terminology-lint src --json     # complete results, including suggested_identifier
-quranic-terminology-lint src --fix      # supported prose only
-quranic-terminology-lint src --unsafe-fixes # explicit textual code renames
+quranic-terminology-lint src --unsafe-fixes # supported code and prose replacements
 ```
 
 The default report shows 20 findings with locations; the table shows 10 rows.

@@ -1,4 +1,4 @@
-"""Apply prose corrections; code renames require explicit unsafe opt-in.
+"""Write supported terminology replacements after explicit unsafe opt-in.
 
 A name's absence from Git history does not establish ownership, binding
 scope, or freedom from collisions. No code rename is considered safe.
@@ -19,7 +19,6 @@ class Rename:
     column: int
     old: str
     new: str
-    prose: bool
 
 
 def code_spans(text, fenced):
@@ -44,15 +43,6 @@ def code_spans(text, fenced):
 
 def plain_word(old, new):
     return old.isalpha() and new.isalpha() and (old.islower() or old.istitle() or old.isupper())
-
-
-def select(renames, unsafe=False):
-    """(applied, held back)."""
-    if unsafe:
-        return renames, []
-    prose = [r for r in renames if r.prose]
-    code = [r for r in renames if not r.prose]
-    return prose, code
 
 
 def write(renames):

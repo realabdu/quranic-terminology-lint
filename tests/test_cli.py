@@ -296,13 +296,13 @@ def repo(files):
     git("commit", "-qm", "base", "--allow-empty")
 
 
-def test_fix_holds_new_code_names_but_unsafe_preserves_style(capsys):
+def test_check_preserves_files_and_unsafe_fix_preserves_name_style(capsys):
     repo({"old.ts": "export const riwaya = 1;\n"})
     Path("a.ts").write_text("const ayaNo = getSuraName(x); // the aya list\nconst AYA_NO = 1;\n")
     original = Path("a.ts").read_text()
-    assert cli.main(["a.ts", "--fix"]) == 1
+    assert cli.main(["a.ts"]) == 1
     assert Path("a.ts").read_text() == original
-    assert "Not renamed" in capsys.readouterr().out
+    capsys.readouterr()
     assert cli.main(["a.ts", "--unsafe-fixes"]) == 1
     assert Path("a.ts").read_text() == (
         "const ayahNumber = getSurahName(x); // the ayah list\nconst AYAH_NUMBER = 1;\n")
@@ -310,43 +310,33 @@ def test_fix_holds_new_code_names_but_unsafe_preserves_style(capsys):
     assert cli.main(["a.ts"]) == 0
 
 
-def test_fix_holds_code_even_when_every_occurrence_is_reachable(capsys):
-    repo({"lib.ts": "export function getSuraName() {}\n"})
-    Path("a.ts").write_text(
-        "getSuraName();\n"                    # exists in the last commit
-        'const sajdaList = ["sajdaList"];\n'  # repeated in a string
-        "const qiraaMap = 1;\n")              # also used in a file not being fixed
-    Path("b.ts").write_text("use(qiraaMap);\n")
-    assert cli.main(["a.ts", "--fix"]) == 1
-    assert Path("a.ts").read_text().startswith("getSuraName();\nconst sajdaList")
-    output = capsys.readouterr().out
-    assert "Not renamed: getSuraName, qiraaMap, sajdaList" in output
-    assert cli.main(["a.ts", "b.ts", "--fix"]) == 1
-    assert "qiraaMap" in Path("a.ts").read_text() and Path("b.ts").read_text() == "use(qiraaMap);\n"
-
-
 def test_fix_prose_words_but_not_code_in_docs(capsys):
     repo({})
     Path("README.md").write_text("The Sura list.\n\nCall `get_sura()`:\n\n```\nsura = 1\n```\n")
     Path("a.py").write_text("x = 1  # the aya and `aya_id`\n")
-    cli.main([".", "--fix"])
+    cli.main([".", "--unsafe-fixes"])
     assert Path("README.md").read_text() == "The Surah list.\n\nCall `get_sura()`:\n\n```\nsura = 1\n```\n"
     assert Path("a.py").read_text() == "x = 1  # the ayah and `aya_id`\n"
 
 
 def test_unsafe_fixes_rename_existing_names(capsys):
     repo({"lib.ts": "export function getSuraName() {}\n"})
-    assert cli.main(["lib.ts", "--fix"]) == 1
+    assert cli.main(["lib.ts"]) == 1
     assert "getSuraName" in Path("lib.ts").read_text()
     assert cli.main(["lib.ts", "--unsafe-fixes"]) == 1
     assert Path("lib.ts").read_text() == "export function getSurahName() {}\n"
 
 
-def test_fix_outside_git_only_fixes_prose(capsys):
+def test_unsafe_fix_outside_git_reports_edits_and_is_idempotent(capsys):
     Path("a.py").write_text("aya_no = 1  # the aya\n")
-    cli.main(["a.py", "--fix"])
-    assert Path("a.py").read_text() == "aya_no = 1  # the ayah\n"
-    assert "unsafe opt-in" in capsys.readouterr().out
+    assert cli.main(["a.py", "--unsafe-fixes", "--json"]) == 1
+    assert Path("a.py").read_text() == "ayah_number = 1  # the ayah\n"
+    result = json.loads(capsys.readouterr().out)
+    assert result["summary"]["fixed_names"] == 2
+    assert result["summary"]["fixed_files"] == 1
+    assert "held_back" not in result["summary"]
+    assert cli.main(["a.py", "--unsafe-fixes", "--json"]) == 0
+    assert json.loads(capsys.readouterr().out)["summary"]["fixed_names"] == 0
 
 
 def test_fix_never_touches_strings_data_warnings_or_compatibility(capsys):
@@ -361,10 +351,23 @@ def test_fix_never_touches_strings_data_warnings_or_compatibility(capsys):
     assert Path("legacy.py").read_text() == "sura = 1\n"
 
 
-def test_without_fix_nothing_is_written(capsys):
-    Path("a.py").write_text("sura = 1\n")
-    assert cli.main(["a.py"]) == 1
-    assert Path("a.py").read_text() == "sura = 1\n"
+@pytest.mark.parametrize("args", [[], ["--json"], ["--by", "table"]])
+def test_check_never_writes_code_or_prose(capsys, args):
+    source = "# the aya list\naya_number = 1\n"
+    Path("a.py").write_text(source)
+    assert cli.main(["a.py", *args]) == 1
+    assert Path("a.py").read_text() == source
+
+
+@pytest.mark.parametrize("args", [["--fix"], ["--fix", "--unsafe-fixes"]])
+def test_removed_fix_flag_fails_before_writing(capsys, args):
+    source = "# the aya list\naya_number = 1\n"
+    Path("a.py").write_text(source)
+    with pytest.raises(SystemExit) as error:
+        cli.main(["a.py", *args])
+    assert error.value.code == 2
+    assert "unrecognized arguments: --fix" in capsys.readouterr().err
+    assert Path("a.py").read_text() == source
 
 
 def test_fix_never_edits_a_string_containing_the_other_quote(capsys):
@@ -383,16 +386,16 @@ def test_fix_never_edits_a_string_containing_the_other_quote(capsys):
     ("model.xml", "<!-- Tanzil Quran Text (Uthmani) -->\n<aya />\n"),
     ("model.mdx", "export const aya = 1;\n\nThe Sura list\n"),
 ])
-def test_safe_fix_preserves_code_strings_and_copied_data(capsys, name, source):
+def test_check_preserves_code_strings_and_copied_data(capsys, name, source):
     Path(name).write_text(source)
-    assert cli.main([name, "--fix"]) == 1
+    assert cli.main([name]) == 1
     assert Path(name).read_text() == source
 
 
-def test_safe_fix_after_git_rename_preserves_existing_names(capsys):
+def test_check_after_git_rename_preserves_existing_names(capsys):
     repo({"old.py": "sura = 1\n"})
     git("mv", "old.py", "new.py")
-    assert cli.main(["new.py", "--fix"]) == 1
+    assert cli.main(["new.py"]) == 1
     assert Path("new.py").read_text() == "sura = 1\n"
 
 
@@ -407,6 +410,17 @@ def test_unsafe_fix_declines_unsupported_javascript_syntax(capsys, source):
     assert Path("model.ts").read_text() == source
 
 
+@pytest.mark.parametrize("name,source", [
+    ("model.xml", "<!-- Tanzil Quran Text (Uthmani) -->\n<aya />\n"),
+    ("model.mdx", "export const aya = 1;\n\nThe Sura list\n"),
+    ("model.tsx", "const aya = <div>sura</div>;\n"),
+])
+def test_unsafe_fix_preserves_unsupported_formats(capsys, name, source):
+    Path(name).write_text(source)
+    assert cli.main([name, "--unsafe-fixes"]) == 1
+    assert Path(name).read_text() == source
+
+
 def test_python_parse_failure_prevents_fixing(capsys):
     source = '"""unterminated\n# the aya\n'
     Path("model.py").write_text(source)
@@ -416,7 +430,7 @@ def test_python_parse_failure_prevents_fixing(capsys):
 
 def test_fix_preserves_line_endings(capsys):
     Path("model.py").write_bytes(b"# the aya\r\nayah = 1\r\n")
-    cli.main(["model.py", "--fix"])
+    cli.main(["model.py", "--unsafe-fixes"])
     assert Path("model.py").read_bytes() == b"# the ayah\r\nayah = 1\r\n"
 
 
@@ -431,5 +445,5 @@ def test_fix_preserves_line_endings(capsys):
 ])
 def test_fix_preserves_document_examples(capsys, source):
     Path("README.md").write_text(source)
-    cli.main(["README.md", "--fix"])
+    cli.main(["README.md", "--unsafe-fixes"])
     assert Path("README.md").read_text() == source
