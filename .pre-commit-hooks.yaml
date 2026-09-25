@@ -1,6 +1,6 @@
 - id: quranic-terminology
   name: Quranic terminology
-  description: Check files against a bundled Quran.ws terminology snapshot
+  description: Check that names follow the Quranic vocabulary naming standard
   entry: quranic-terminology-lint
   language: python
   types: [text]
@@ -8,3 +8,13 @@
   require_serial: true
   minimum_pre_commit_version: '3.2.0'
   stages: [pre-commit, pre-merge-commit, pre-push, manual]
+- id: quranic-terminology-fix
+  name: Quranic terminology (fix)
+  description: Rename names that break the Quranic vocabulary naming standard
+  entry: quranic-terminology-lint --fix
+  language: python
+  types: [text]
+  pass_filenames: true
+  require_serial: true
+  minimum_pre_commit_version: '3.2.0'
+  stages: [pre-commit, manual]

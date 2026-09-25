@@ -1,109 +1,152 @@
 # Quranic terminology lint
 
-An offline Python CLI and pre-commit hook using a bundled Quran.ws terminology
-checker and dictionary. Requires Python 3.10+. Error-level findings block;
-warnings and mixed spellings are advisory. Rules currently come from a draft
-standard; reports identify the snapshot and draft entry count.
-
-## Install and run
-
-```sh
-python -m pip install .
-quranic-terminology-lint src
-quranic-terminology-lint src --json
-quranic-terminology-lint --version
-```
-
-No arguments means use `.terminology.json`'s `paths`, or the current directory.
-Configuration is discovered from the working directory upward; `--config`
-selects it explicitly. Configured paths/exclusions are relative to that file.
-Explicit arguments override the default paths but still respect exclusions.
-Exit status: 0 no blocking findings, 1 violations, 2 configuration/data/I/O error.
-Unsupported files and symlinks are skipped. Files above 2,000,000 bytes are
-reported as skipped. Invalid UTF-8 in eligible files is an error.
-
-The default report is an aligned Found / Preferred / Occurrences table with no
-paths or repeated rule labels. Errors appear before advisory warnings in
-separate sections. `--limit` caps correction rows across the entire invocation
-(default 5); compatibility and mixed-spelling findings are summarized, not
-listed. `--json` always includes every finding.
-
-Use `--by file`, `--by concept`, or `--by rule` for detailed diagnostics:
+Checks that the names in your code follow the Quranic vocabulary naming
+standard. Add it to pre-commit once and every commit is checked: `aya_number`,
+`tajweed_rules` or `al_fatihah` are rejected with the name to use instead and
+the rule behind it.
 
 ```text
-model.py:1: error [spelling] 'aya' → 'ayah' in 'aya_number' (Ayah) [internal]
+Quranic terminology · 12 files · 3 errors · 1 warnings
+
+Errors
+Found       Preferred  Rule  Count
+aya         ayah       019       4
+tajweed     tajwid     021       2
+al_fatihah  fatihah    031       1
+
+Warnings (do not block)
+Found     Preferred                     Rule  Count
+ayah_idx  ayah_number or ayah_position  069       1
 ```
 
-In these explicit detailed modes, `--limit` controls findings per group.
-Compatibility findings remain in a
-separate non-blocking section. `--json` retains the upstream finding fields.
+It runs offline, has no dependencies, and needs Python 3.10+. It only edits
+files when you ask it to fix them.
 
-The adapter treats ordinary `timing` as ambiguous (advisory in code, permitted
-in prose). Complete canonical compounds take precedence over shorter aliases.
-URLs and recognized filenames in quoted strings, prose, or source citations
-are treated as resource references. Only those spans are skipped; surrounding
-names are still checked. JSON reports count these as `reference_literals`.
-Python uses the standard-library tokenizer to recognize strings and comments,
-including multiline and escaped strings. Interpolated strings are not
-automatically exempted, so names inside expressions remain checked. If Python
-tokenization fails, the file is still linted without automatic reference
-exemptions. Other languages retain lexical reference handling.
-Neither approach can infer every external organization or proper name;
-use `external_names` for those. Bundled upstream rules and data stay unchanged.
+## Set up
 
-Local naming override: `word_timestamp` / `word_timestamps` replaces
-`word_timing` / `word_timings` for word-level audio spans. The old names are
-reported, including camelCase and PascalCase forms. Ayah-level and ordinary
-timing are unchanged. The adapter preserves the upstream `word_timing` concept
-key and snapshot bytes; JSON `summary.terminology_overrides` records the naming
-difference. This is a local maintainer decision, not an upstream standard update.
+Add one of the two hooks to your project's `.pre-commit-config.yaml`, then run
+`pre-commit install`. `pre-commit autoupdate` moves you to the latest release.
 
-## pre-commit
-
-Add the following to your project's `.pre-commit-config.yaml`, using an
-immutable commit SHA for reproducible checks:
+**Check only (recommended).** A commit with an error is stopped, and the table
+says what to rename. Nothing is changed for you.
 
 ```yaml
 repos:
   - repo: https://github.com/realabdu/quranic-terminology-lint
-    rev: f1668103451df9da52200384f09a38c643cc5bbb
+    rev: v0.2.0
     hooks:
       - id: quranic-terminology
-        files: ^(src|app|database|data)/
 ```
 
-Run `pre-commit install` in the consumer repository. To try this local checkout:
+**Check and fix.** Also renames, in place and in each name's own style, what
+can be renamed without breaking anything. The commit still stops so you can
+review the change and stage it.
+
+```yaml
+      - id: quranic-terminology-fix
+```
+
+Like Ruff and RuboCop, the fix separates safe renames from unsafe ones, and
+like darker and SonarQube it holds new code to the standard without forcing a
+rename of old code:
+
+- **Prose**: plain words in documentation and comments (`the aya list` →
+  `the ayah list`). Names in `backticks` or code blocks are left alone.
+- **New names**: a code name that is not in the last commit, when every place
+  it appears is one the fix edits. Write `getSuraNo` and commit
+  `getSurahNumber`.
+- **Everything else is reported, not renamed**: a name already committed, or
+  one repeated in a string or in a file the fix cannot reach, because other
+  code, data or a library's users may depend on it. Rename it with your
+  editor's rename refactoring. Strings, JSON and CSV are never edited.
+
+`--unsafe-fixes` also renames existing names. Use it only on application code
+with tests, and review the diff: a text rename cannot keep a name in sync with
+a string that repeats it, and a renamed export breaks everything that uses it.
+
+```yaml
+      - id: quranic-terminology-fix
+        args: [--unsafe-fixes]
+```
+
+Measured on a fresh clone of the quran-meta TypeScript library (430 tests):
+
+| | Changed | Build | Type check | Tests |
+| --- | --- | --- | --- | --- |
+| Before | | passes | passes | 430 pass |
+| `--fix` on the existing code | 841 words in docs and comments; no code, no strings | passes | passes | 430 pass |
+| `--fix` on a new function and its test | `getSuraNo(ayaKey)` → `getSurahNumber(ayahKey)` | passes | passes | 431 pass |
+| `--unsafe-fixes` | 3,516 names, including 12 exported ones | passes | 73 errors | 14 fail |
+
+A file name is never renamed. In the example above, `suraTools.ts` is still
+reported so you can rename the file yourself.
+
+To check the whole project once, run
+`pre-commit run quranic-terminology --all-files`.
+
+To run it directly or in CI:
 
 ```sh
-pre-commit try-repo /home/abdu/Work/quranic-terminology-lint quranic-terminology --all-files
+pip install git+https://github.com/realabdu/quranic-terminology-lint@v0.2.0
+quranic-terminology-lint            # the paths in .terminology.json, or the current directory
+quranic-terminology-lint src --by file
+quranic-terminology-lint src --json
+quranic-terminology-lint src --fix  # safe renames in place; review with git diff
 ```
 
-Run `pre-commit run quranic-terminology --all-files` after installation.
-To also enable push and merge checks, install those Git hook types explicitly:
+Exit status: 0 no errors (warnings do not block), 1 errors found, 2 a
+configuration or file problem.
 
-```sh
-pre-commit install --hook-type pre-commit --hook-type pre-push --hook-type pre-merge-commit
-```
+## What it checks
 
-The separate [Quranic Terminology skill](https://github.com/realabdu/quranic-terminology)
-provides contextual AI-assisted audits and edits. Its 66-concept vocabulary
-differs from this hook's bundled 180-entry snapshot; identical decisions are
-not currently guaranteed.
+Each identifier is split into words (`ayahKey`, `ayah_key` and `AYAH_KEY` are
+the same name) and checked against the standard's rules. The term files list
+each concept's canonical name. Most misspellings are predicted by the rules
+from that name, so a finding names the rule that was broken.
 
-The hook checks complete staged files, performs no edits, and never updates
-the dictionary. Initial hook installation may need network access to install
-build tooling. Subsequent lint runs need none. Serial execution prevents
-parallel batches; it does not guarantee a complete repository-wide report.
+| Rule | Checks | Example |
+| --- | --- | --- |
+| 001 | One code name per concept | `chapter` → `surah`, `verse` → `ayah` |
+| 009 | No transliteration marks or apostrophes | `qira'ah` → `qiraah` |
+| 019, 020 | Ta marbutah | `sura` → `surah`, `hamzah_al_wasl` → `hamzat_al_wasl` |
+| 021 | Long vowels are one letter | `tajweed` → `tajwid`, `tafseer` → `tafsir` |
+| 022 | The nisbah ending | `makkiyy` → `makki` |
+| 026 | Final hamzah and ayn after sukun | `rub_al_hizb` → `rubu_al_hizb` |
+| 030–033 | The definite article | `asbab_an_nuzul` → `asbab_al_nuzul`, `al_fatihah` → `fatihah`, `rasm_al_uthmani` → `rasm_uthmani`, `rubu_hizb` → `rubu_al_hizb` |
+| 046 | Deprecated names | `word_timing` → `word_timestamp` |
+| 049 | Plurals add `s` | `ayat` → `ayahs`, `suras` → `surahs` |
+| 050 | `_type` is for mark types | `waqf_type` (warning) |
+| 055–057 | Numbering systems, personal and surah names | `qaloun` → `qalun`, `kufan` → `kufi` |
+| 068, 069 | `number` and `position` | `surah_no` → `surah_number`, `ayah_idx` (warning) |
+| 073 | Timing names do not include the recording | `hafs_word_timestamp` (warning) |
 
-For CI, use the same pinned installation and run `quranic-terminology-lint`
-from the project root to scan all configured directories in one invocation.
-`pre-commit run quranic-terminology --all-files` checks all matching tracked
-files but can still batch them. Changes to configuration or dictionary versions
-should be followed by a full scan. Mixed spellings never fail this release.
+The other rules govern how a name is derived from vocalised Arabic, or how
+concepts are modelled. They apply when a term is added to the term files, not
+to code.
+
+**Errors** are certain: a known misspelling of a Quranic term. **Warnings** are
+guesses to review, and never block a commit.
+
+### What it leaves alone
+
+- Comments, strings with spaces (`"Surah al-Fatihah"`), text between HTML
+  tags, and Markdown or text files are read as prose. Prose may use display
+  names (`Tajweed`), English equivalents (`verse`), `al-` and apostrophes. It
+  is only checked for misspellings such as `Sura`.
+- Ordinary English words that a term also translates (`part`, `pause`,
+  `reading`, `stop`, `timing`) are never reported on their own.
+- General concepts with English names (`token`, `line`, `page`) are not held
+  to the Arabic spelling rules.
+- ALL-CAPS Unicode character names in prose (`ARABIC FATHA`, rule 043).
+- In CSV and TSV files only the header row is checked, and in JSON only the
+  keys. Rows and values are data, often copied from a source.
+- Scholarly transliteration in prose (`riwāyāt`).
+- URLs and file names (`uthmani-hafs.json`), virtualenvs of any name,
+  `node_modules`, build output, and files over 2 MB.
 
 ## Exceptions
 
-Commit a `.terminology.json`, for example:
+Commit a `.terminology.json` at the project root:
 
 ```json
 {
@@ -112,34 +155,45 @@ Commit a `.terminology.json`, for example:
   "ignore_words": ["segment"],
   "allow_gloss_in": ["src/api/v1/**"],
   "compatibility": ["src/legacy/schema.sql"],
-  "external_names": ["vendor_sura_id"]
+  "external_names": ["vendor_sura_id"],
+  "_comment": "Why each exception exists."
 }
 ```
 
-Use `ignore_words` for unrelated meanings, `allow_gloss_in` for allowed English
-glosses, `compatibility` for established names that require a migration, and
-`external_names` for regexes matching names owned upstream. These follow the
-bundled engine's semantics. A line containing `terminology: ignore` is excused.
-Document why each exception exists. Do not blanket-exempt new API fields.
+| Key | Use it for |
+| --- | --- |
+| `paths` | What to check when no paths are given. |
+| `exclude` | Files that are never read. |
+| `ignore_words` | A word with an unrelated meaning in this project. |
+| `allow_gloss_in` | Files that must use English equivalents, such as a published API that says `verse`. |
+| `compatibility` | Names you cannot rename without a migration. Reported, but they do not block. |
+| `external_names` | Regular expressions for names someone else owns, such as a publisher's column `aya_text_emlaey`. |
 
-## Development and snapshot updates
+A line containing `terminology: ignore` is skipped. Keys starting with `_` or
+`$` are ignored, so you can record the reasons.
+
+## Changing the terms
+
+The terms live in `src/quranic_terminology_lint/terms/`:
+
+- `concepts.tsv`: each concept's code name, display name, origin, Arabic
+  name, and the names no rule predicts (other spellings, English
+  equivalents, Arabic plurals, deprecated names).
+- `members.tsv`: surahs, qiraat, rawis, riwayahs, turuq, ayah numbering
+  systems and tajwid rulings.
+
+Do not list a spelling that a rule already predicts; `tests/test_rules.py`
+checks this for the common cases. A change to the terms is released like any
+other change, and projects pick it up with `pre-commit autoupdate`.
+
+## Development
 
 ```sh
 python -m pip install -e '.[test]'
 python -m pytest
-python -m build
+quranic-terminology-lint          # the linter checks its own code
 pre-commit validate-manifest
-python tools/import_snapshot.py /path/to/quran-ws-docs --check
-python tools/import_snapshot.py /path/to/quran-ws-docs
+python -m build
 ```
 
-Import only a trusted local source checkout: validation executes its Python
-checker. The importer validates resources before replacing the bundle and
-records exact hashes and provenance. `--check` returns 0 if unchanged, 1 for
-a valid differing candidate, or 2 for invalid input; it never replaces files.
-The original source checkout is only read. Commit imports and integration
-test results together, then release a new version for consumers to adopt.
-
-The initial snapshot is local and uncommitted upstream. See `NOTICE` and
-installed `vendor/provenance.json`. New integration code is MIT; bundled
-resources retain upstream licensing. No rule ownership moves here.
+MIT licensed.

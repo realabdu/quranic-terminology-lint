@@ -42,8 +42,8 @@ def test_real_pre_commit(tmp_path):
     run(consumer, "git", "add", ".")
     rejected = run(consumer, "git", "commit", "-m", "Rejected", expected=1)
     output = rejected.stdout + rejected.stderr
-    assert "Occurrences" in output
-    assert any(line.split() == ["sura", "surah", "1"] for line in output.splitlines())
+    assert "Count" in output
+    assert any(line.split() == ["sura", "surah", "019", "1"] for line in output.splitlines())
     # A clean working copy must not hide an invalid staged version.
     model.write_text("surah = 1\n")
     run(consumer, "git", "commit", "-m", "Still rejected", expected=1)
@@ -61,3 +61,36 @@ def test_real_pre_commit(tmp_path):
     run(consumer, "git", "commit", "-m", "Only excluded change")
     run(consumer, "git", "rm", "a space.py")
     run(consumer, "git", "commit", "-m", "Deletion")
+
+
+def test_real_pre_commit_fix(tmp_path):
+    hook = tmp_path / "hook"
+    shutil.copytree(ROOT, hook, ignore=shutil.ignore_patterns(
+        ".git", ".venv", "__pycache__", ".pytest_cache", "*.egg-info", "dist", "build"))
+    env = dict(os.environ, PRE_COMMIT_HOME=str(tmp_path / "cache"))
+    def run(cwd, *args, expected=0):
+        if args[0] == "pre-commit":
+            args = (sys.executable, "-m", "pre_commit", *args[1:])
+        result = subprocess.run(args, cwd=cwd, env=env, text=True, capture_output=True)
+        assert result.returncode == expected, result.stdout + result.stderr
+        return result
+    for path in (hook, tmp_path / "consumer"):
+        path.mkdir(exist_ok=True)
+        run(path, "git", "init", "-b", "main")
+        run(path, "git", "config", "user.email", "test@example.invalid")
+        run(path, "git", "config", "user.name", "Hook Test")
+    run(hook, "git", "add", ".")
+    run(hook, "git", "commit", "-m", "Test snapshot")
+    rev = run(hook, "git", "rev-parse", "HEAD").stdout.strip()
+    consumer = tmp_path / "consumer"
+    (consumer / ".pre-commit-config.yaml").write_text(
+        f"repos:\n  - repo: '{hook}'\n    rev: {rev}\n    hooks:\n      - id: quranic-terminology-fix\n")
+    model = consumer / "model.py"
+    model.write_text("aya_no = 1\n")
+    run(consumer, "git", "add", ".")
+    run(consumer, "pre-commit", "install")
+    rejected = run(consumer, "git", "commit", "-m", "Fixed but stopped", expected=1)
+    assert "Fixed 1 names" in rejected.stdout + rejected.stderr
+    assert model.read_text() == "ayah_number = 1\n"
+    run(consumer, "git", "add", ".")
+    run(consumer, "git", "commit", "-m", "Reviewed")

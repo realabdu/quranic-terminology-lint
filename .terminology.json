@@ -1,6 +1,7 @@
 {
   "paths": ["src/quranic_terminology_lint"],
-  "exclude": ["src/quranic_terminology_lint/vendor/**", "tests/**", "examples/failing/**"],
+  "exclude": ["src/quranic_terminology_lint/terms/**", "src/quranic_terminology_lint/rules.py", "tests/**", "examples/failing/**"],
   "ignore_words": ["parts"],
-  "_comment": "Upstream dictionaries and deliberate test violations are not project naming mistakes. The word parts denotes filesystem path components here, not juz."
+  "external_names": ["token\\.type"],
+  "_comment": "The term files, the rule definitions and deliberate test violations contain wrong names on purpose. parts means path components here, not juz. token.type is Python's tokenizer API."
 }

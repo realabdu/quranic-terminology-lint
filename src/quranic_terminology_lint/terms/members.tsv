@@ -1,0 +1,239 @@
+# Members of closed sets: surahs, qiraat, rawis, riwayahs, turuq,
+# ayah numbering systems and tajwid rulings.
+#
+# kind            the set the member belongs to
+# code            the member's canonical code (rules 055-057)
+# display, arabic as in concepts.tsv
+# other_spellings names that no rule predicts
+kind	code	display	arabic	other_spellings
+ayah_numbering_system	basri	Basri Numbering	العَدّ البَصْرِيّ	basran,basri_numbering,basran_numbering,ayah_numbering_basri
+ayah_numbering_system	dimashqi	Dimashqi Numbering	العَدّ الدِّمَشْقِيّ	damascene,dimashqi_numbering,shami,shami_numbering,ayah_numbering_shami,ayah_numbering_dimashqi
+ayah_numbering_system	kufi	Kufi Numbering	العَدّ الكُوفِيّ	kufan,kufi_numbering,kufan_numbering,ayah_numbering_kufi
+ayah_numbering_system	madani_first	First Madani Numbering	العَدّ المَدَنِيّ الأَوَّل	first_madani,first_madinan,first_madani_numbering,madani_awwal,ayah_numbering_madani_awwal,madani_first_numbering,ayah_numbering_madani_first
+ayah_numbering_system	madani_last	Last Madani Numbering	العَدّ المَدَنِيّ الأَخِير	last_madani,last_madinan,last_madani_numbering,madani_akhir,ayah_numbering_madani_akhir,madani_last_numbering,ayah_numbering_madani_last
+ayah_numbering_system	makki	Makki Numbering	العَدّ المَكِّيّ	makkan,makki_numbering,meccan,meccan_numbering,ayah_numbering_makki
+qiraah	abu_amr	Abu Amr	أَبُو عَمْرو	abu_amr_al_basri,abu_amro,abu_umar
+qiraah	abu_jafar	Abu Jafar	أَبُو جَعْفَر	abu_ja_far,abu_jaafar,abu_jafar_al_madani
+qiraah	asim	Asim	عَاصِم	aasem,aasim,asim_al_kufi
+qiraah	hamzah	Hamzah	حَمْزَة	hamzah_al_kufi,hamzah_al_zayyat
+qiraah	ibn_amir	Ibn Amir	ابْن عَامِر	ibn_aamir,ibn_amir_al_shami
+qiraah	ibn_kathir	Ibn Kathir	ابْن كَثِير	ibn_kathir_al_makki
+qiraah	khalaf_al_ashir	Khalaf al-Ashir	خَلَف العَاشِر	khalaf_al_bazzar,khalaf_the_tenth
+qiraah	kisai	Al-Kisai	الكِسَائِي	al_kisaai,kisa_i
+qiraah	nafi	Nafi	نَافِع	naafi,nafi_al_madani,nafie
+qiraah	yaqub	Yaqub	يَعْقُوب	ya_qub,yaqub_al_hadrami
+rawi	abu_al_harith	Abu al-Harith	أَبُو الحَارِث	abu_al_haarith,abul_harith
+rawi	bazzi	Al-Bazzi	البَزِّي	buzzi
+rawi	duri	Al-Duri	الدُّورِي	douri,dury
+rawi	hafs	Hafs	حَفْص	hafs_ibn_sulayman
+rawi	hisham	Hisham	هِشَام	hishaam
+rawi	ibn_dhakwan	Ibn Dhakwan	ابْن ذَكْوَان	ibn_thakwan,ibn_zakwan
+rawi	ibn_jammaz	Ibn Jammaz	ابْن جَمَّاز	ibn_jamaz,ibn_jammaaz
+rawi	ibn_wardan	Ibn Wardan	ابْن وَرْدَان	ibn_wardaan
+rawi	idris	Idris	إِدْرِيس	
+rawi	ishaq	Ishaq	إِسْحَاق	is_haq,ishaaq
+rawi	khalaf	Khalaf	خَلَف	khalaf_al_bazzar,khalaf_ibn_hisham
+rawi	khallad	Khallad	خَلَّاد	khalad,khallaad
+rawi	qalun	Qalun	قَالُون	qalon,qaloun
+rawi	qunbul	Qunbul	قُنْبُل	kunbul,qumbul
+rawi	rawh	Rawh	رَوْح	rauh,rooh,rowh
+rawi	ruways	Ruways	رُوَيْس	rowais,ruwais,rways
+rawi	shubah	Shubah	شُعْبَة	abu_bakr_shubah,shu_bah
+rawi	susi	Al-Susi	السُّوسِي	sousi
+rawi	warsh	Warsh	وَرْش	warsh_al_misri
+riwayah	abu_al_harith_an_kisai	Abu al-Harith an al-Kisai	أَبُو الحَارِث عَن الكِسَائِي	abul_harith_an_kisai
+riwayah	bazzi_an_ibn_kathir	Al-Bazzi an Ibn Kathir	البَزِّي عَن ابْن كَثِير	albazzi
+riwayah	duri_an_abu_amr	Al-Duri an Abi Amr	الدُّورِي عَن أَبِي عَمْرو	al_duri_an_abi_amr,doori_abu_amr,duri_abu_amr,duri_an_abi_amr
+riwayah	duri_an_kisai	Al-Duri an al-Kisai	الدُّورِي عَن الكِسَائِي	al_duri_an_al_kisai,doori_kisai,duri_kisai
+riwayah	hafs_an_asim	Hafs an Asim	حَفْص عَن عَاصِم	hafs_an_aasim
+riwayah	hisham_an_ibn_amir	Hisham an Ibn Amir	هِشَام عَن ابْن عَامِر	
+riwayah	ibn_dhakwan_an_ibn_amir	Ibn Dhakwan an Ibn Amir	ابْن ذَكْوَان عَن ابْن عَامِر	ibn_zakwan_an_ibn_amir
+riwayah	ibn_jammaz_an_abu_jafar	Ibn Jammaz an Abi Jafar	ابْن جَمَّاز عَن أَبِي جَعْفَر	ibn_jammaz_an_abi_jafar
+riwayah	ibn_wardan_an_abu_jafar	Ibn Wardan an Abi Jafar	ابْن وَرْدَان عَن أَبِي جَعْفَر	ibn_wardan_an_abi_jafar
+riwayah	idris_an_khalaf_al_ashir	Idris an Khalaf	إِدْرِيس عَن خَلَف	idrees,idris_an_khalaf
+riwayah	ishaq_an_khalaf_al_ashir	Ishaq an Khalaf	إِسْحَاق عَن خَلَف	ishaq_an_khalaf
+riwayah	khalaf_an_hamzah	Khalaf an Hamzah	خَلَف عَن حَمْزَة	
+riwayah	khallad_an_hamzah	Khallad an Hamzah	خَلَّاد عَن حَمْزَة	
+riwayah	qalun_an_nafi	Qalun an Nafi	قَالُون عَن نَافِع	
+riwayah	qunbul_an_ibn_kathir	Qunbul an Ibn Kathir	قُنْبُل عَن ابْن كَثِير	qumbul
+riwayah	rawh_an_yaqub	Rawh an Yaqub	رَوْح عَن يَعْقُوب	rooh_an_yaqub
+riwayah	ruways_an_yaqub	Ruways an Yaqub	رُوَيْس عَن يَعْقُوب	ruwais_an_yaqub
+riwayah	shubah_an_asim	Shubah an Asim	شُعْبَة عَن عَاصِم	
+riwayah	susi_an_abu_amr	Al-Susi an Abi Amr	السُّوسِي عَن أَبِي عَمْرو	al_susi_an_abi_amr,soosi,susi_an_abi_amr
+riwayah	warsh_an_nafi	Warsh an Nafi	وَرْش عَن نَافِع	
+surah	aal_imran	Aal Imran	آل عِمْرَان	aali_imran,al_imran,ali_imran,family_of_imran
+surah	abas	Abas	عَبَس	
+surah	adiyat	Adiyat	العَادِيَات	
+surah	ahqaf	Ahqaf	الأَحْقَاف	
+surah	ahzab	Ahzab	الأَحْزَاب	
+surah	ala	Ala	الأَعْلَى	
+surah	alaq	Alaq	العَلَق	
+surah	anam	Anam	الأَنْعَام	
+surah	anbiya	Anbiya	الأَنْبِيَاء	
+surah	anfal	Anfal	الأَنْفَال	
+surah	ankabut	Ankabut	العَنْكَبُوت	
+surah	araf	Araf	الأَعْرَاف	
+surah	asr	Asr	العَصْر	
+surah	balad	Balad	البَلَد	
+surah	baqarah	Baqarah	البَقَرَة	al_baqara,the_cow
+surah	bayyinah	Bayyinah	البَيِّنَة	
+surah	buruj	Buruj	البُرُوج	
+surah	dhariyat	Dhariyat	الذَّارِيَات	
+surah	duha	Duha	الضُّحَى	
+surah	dukhan	Dukhan	الدُّخَان	
+surah	fajr	Fajr	الفَجْر	
+surah	falaq	Falaq	الفَلَق	
+surah	fath	Fath	الفَتْح	
+surah	fatihah	Fatihah	الفَاتِحَة	al_fatiha,the_opening,umm_al_kitab
+surah	fatir	Fatir	فَاطِر	
+surah	fil	Fil	الفِيل	elephant
+surah	furqan	Furqan	الفُرْقَان	
+surah	fussilat	Fussilat	فُصِّلَت	fussilat_ha_mim,ha_mim_al_sajdah
+surah	ghafir	Ghafir	غَافِر	al_mumin,mumin
+surah	ghashiyah	Ghashiyah	الغَاشِيَة	
+surah	hadid	Hadid	الحَدِيد	
+surah	hajj	Hajj	الحَجّ	
+surah	haqqah	Haqqah	الحَاقَّة	
+surah	hashr	Hashr	الحَشْر	
+surah	hijr	Hijr	الحِجْر	
+surah	hud	Hud	هُود	
+surah	hujurat	Hujurat	الحُجُرَات	
+surah	humazah	Humazah	الهُمَزَة	
+surah	ibrahim	Ibrahim	إِبْرَاهِيم	
+surah	ikhlas	Ikhlas	الإِخْلَاص	tawhid
+surah	infitar	Infitar	الاِنْفِطَار	
+surah	insan	Insan	الإِنْسَان	dahr,hal_ata
+surah	inshiqaq	Inshiqaq	الاِنْشِقَاق	
+surah	isra	Isra	الإِسْرَاء	bani_israil,subhan
+surah	jathiyah	Jathiyah	الجَاثِيَة	
+surah	jinn	Jinn	الجِنّ	
+surah	jumuah	Jumuah	الجُمُعَة	
+surah	kafirun	Kafirun	الكَافِرُون	
+surah	kahf	Kahf	الكَهْف	
+surah	kawthar	Kawthar	الكَوْثَر	
+surah	layl	Layl	اللَّيْل	
+surah	luqman	Luqman	لُقْمَان	
+surah	maarij	Maarij	المَعَارِج	
+surah	maidah	Maidah	المَائِدَة	
+surah	maryam	Maryam	مَرْيَم	
+surah	masad	Masad	المَسَد	abi_lahab,al_lahab,lahab
+surah	maun	Maun	المَاعُون	
+surah	muddaththir	Muddaththir	المُدَّثِّر	
+surah	muhammad	Muhammad	مُحَمَّد	
+surah	mujadilah	Mujadilah	المُجَادِلَة	
+surah	mulk	Mulk	المُلْك	
+surah	muminun	Muminun	المُؤْمِنُون	
+surah	mumtahinah	Mumtahinah	المُمْتَحِنَة	
+surah	munafiqun	Munafiqun	المُنَافِقُون	
+surah	mursalat	Mursalat	المُرْسَلَات	
+surah	mutaffifin	Mutaffifin	المُطَفِّفِين	
+surah	muzzammil	Muzzammil	المُزَّمِّل	
+surah	naba	Naba	النَّبَأ	
+surah	nahl	Nahl	النَّحْل	
+surah	najm	Najm	النَّجْم	
+surah	naml	Naml	النَّمْل	
+surah	nas	Nas	النَّاس	
+surah	nasr	Nasr	النَّصْر	
+surah	naziat	Naziat	النَّازِعَات	
+surah	nisa	Nisa	النِّسَاء	
+surah	nuh	Nuh	نُوح	
+surah	nur	Nur	النُّور	
+surah	qaaf	Qaaf	ق	qaf
+surah	qadr	Qadr	القَدْر	
+surah	qalam	Qalam	القَلَم	
+surah	qamar	Qamar	القَمَر	
+surah	qariah	Qariah	القَارِعَة	
+surah	qasas	Qasas	القَصَص	
+surah	qiyamah	Qiyamah	القِيَامَة	
+surah	quraysh	Quraysh	قُرَيْش	
+surah	rad	Rad	الرَّعْد	
+surah	rahman	Rahman	الرَّحْمَن	
+surah	rum	Rum	الرُّوم	
+surah	saad	Saad	ص	saad_surah,sad
+surah	saba	Saba	سَبَأ	
+surah	saff	Saff	الصَّفّ	
+surah	saffat	Saffat	الصَّافَّات	
+surah	sajdah	Sajdah	السَّجْدَة	
+surah	shams	Shams	الشَّمْس	
+surah	sharh	Sharh	الشَّرْح	alam_nashrah,inshirah
+surah	shuara	Shuara	الشُّعَرَاء	
+surah	shura	Shura	الشُّورَى	
+surah	taghabun	Taghabun	التَّغَابُن	
+surah	taha	Taha	طه	ta_ha,taa_haa
+surah	tahrim	Tahrim	التَّحْرِيم	
+surah	takathur	Takathur	التَّكَاثُر	
+surah	takwir	Takwir	التَّكْوِير	
+surah	talaq	Talaq	الطَّلَاق	
+surah	tariq	Tariq	الطَّارِق	
+surah	tawbah	Tawbah	التَّوْبَة	at_tawba,baraah
+surah	tin	Tin	التِّين	
+surah	tur	Tur	الطُّور	
+surah	waqiah	Waqiah	الوَاقِعَة	
+surah	yasin	Yasin	يس	ya_seen,ya_sin
+surah	yunus	Yunus	يُونُس	
+surah	yusuf	Yusuf	يُوسُف	
+surah	zalzalah	Zalzalah	الزَّلْزَلَة	
+surah	zukhruf	Zukhruf	الزُّخْرُف	
+surah	zumar	Zumar	الزُّمَر	
+tajwid_ruling	alif_mufakhkhamah	Alif Mufakhkhamah	الأَلِف المُفَخَّمَة	alef_tafkheem
+tajwid_ruling	alif_muraqqaqah	Alif Muraqqaqah	الأَلِف المُرَقَّقَة	alef_tarqeeq
+tajwid_ruling	alifat_saba	Alifat Saba	الأَلِفَات السَّبْع	seven_alefs
+tajwid_ruling	alifat_saba_bikhulf	Alifat Saba Bikhulf	الأَلِفَات السَّبْع بِخُلْف	seven_alefs_khulf
+tajwid_ruling	ghunnat_al_ikhfa_haqiqi_mufakhkhamah	Ghunnat al-Ikhfa Haqiqi Mufakhkhamah	غُنَّة الإِخْفَاء الحَقِيقِيّ المُفَخَّمَة	ikhfa_ghunnah_tafkheem
+tajwid_ruling	ghunnat_al_ikhfa_haqiqi_muraqqaqah	Ghunnat al-Ikhfa Haqiqi Muraqqaqah	غُنَّة الإِخْفَاء الحَقِيقِيّ المُرَقَّقَة	ikhfa_ghunnah_tarqeeq
+tajwid_ruling	huruf_muraqqaqah_daima	Huruf Muraqqaqah Daima	الحُرُوف المُرَقَّقَة دَائِمًا	always_tarqeeq
+tajwid_ruling	idgham_al_meem_sakinah	Idgham al-Meem Sakinah	إِدْغَام المِيم السَّاكِنَة	idgham_shafawi_meem
+tajwid_ruling	idgham_al_mutajanisayn_naqis	Idgham al-Mutajanisayn Naqis	إِدْغَام المُتَجَانِسَيْن النَّاقِص	mutajanisain_idgham_naqis
+tajwid_ruling	idgham_al_mutamathilayn_kamil	Idgham al-Mutamathilayn Kamil	إِدْغَام المُتَمَاثِلَيْن الكَامِل	mutamathilain_idgham_kamil
+tajwid_ruling	idgham_al_noon_bighayr_ghunnah	Idgham al-Noon Bighayr Ghunnah	إِدْغَام النُّون بِغَيْر غُنَّة	idgham_bila_ghunnah_noon
+tajwid_ruling	idgham_al_noon_bighunnah	Idgham al-Noon Bighunnah	إِدْغَام النُّون بِغُنَّة	idgham_bi_ghunnah_noon
+tajwid_ruling	idgham_al_noon_kamil	Idgham al-Noon Kamil	إِدْغَام النُّون الكَامِل	idgham_kamil_noon
+tajwid_ruling	idgham_al_noon_naqis	Idgham al-Noon Naqis	إِدْغَام النُّون النَّاقِص	idgham_naqis_noon
+tajwid_ruling	idgham_al_tanwin_bighayr_ghunnah	Idgham al-Tanwin Bighayr Ghunnah	إِدْغَام التَّنْوِين بِغَيْر غُنَّة	idgham_bila_ghunnah_tanween
+tajwid_ruling	idgham_al_tanwin_bighunnah	Idgham al-Tanwin Bighunnah	إِدْغَام التَّنْوِين بِغُنَّة	idgham_bi_ghunnah_tanween
+tajwid_ruling	idgham_al_tanwin_kamil	Idgham al-Tanwin Kamil	إِدْغَام التَّنْوِين الكَامِل	idgham_kamil_tanween
+tajwid_ruling	idgham_al_tanwin_naqis	Idgham al-Tanwin Naqis	إِدْغَام التَّنْوِين النَّاقِص	idgham_naqis_tanween
+tajwid_ruling	ikhfa_al_meem_sakinah	Ikhfa al-Meem Sakinah	إِخْفَاء المِيم السَّاكِنَة	ikhfa_shafawi_meem
+tajwid_ruling	ikhfa_haqiqi_li_al_noon	Ikhfa Haqiqi li al-Noon	الإِخْفَاء الحَقِيقِيّ لِلنُّون	ikhfa_haqiqi_noon
+tajwid_ruling	ikhfa_haqiqi_li_al_tanwin	Ikhfa Haqiqi li al-Tanwin	الإِخْفَاء الحَقِيقِيّ لِلتَّنْوِين	ikhfa_haqiqi_tanween
+tajwid_ruling	ikhfa_shafawi_fi_al_mutajanisayn	Ikhfa Shafawi Fi al-Mutajanisayn	الإِخْفَاء الشَّفَوِيّ فِي المُتَجَانِسَيْن	mutajanisain_ikhfa_shafawi
+tajwid_ruling	izhar_al_meem_sakinah	Izhar al-Meem Sakinah	إِظْهَار المِيم السَّاكِنَة	izhar_shafawi_meem
+tajwid_ruling	izhar_al_mutamathilayn	Izhar al-Mutamathilayn	إِظْهَار المُتَمَاثِلَيْن	mutamathilain_izhar
+tajwid_ruling	izhar_al_noon_halqi	Izhar al-Noon Halqi	إِظْهَار النُّون الحَلْقِيّ	izhar_halqi_noon
+tajwid_ruling	izhar_al_tanwin_halqi	Izhar al-Tanwin Halqi	إِظْهَار التَّنْوِين الحَلْقِيّ	izhar_halqi_tanween
+tajwid_ruling	izhar_mutlaq	Izhar Mutlaq	الإِظْهَار المُطْلَق	
+tajwid_ruling	jawaz_al_wajhayn_fi_al_raa	Jawaz al-Wajhayn Fi al-Raa	جَوَاز الوَجْهَيْن فِي الرَّاء	raa_either_permissible
+tajwid_ruling	laam_lafz_al_jalalah_mufakhkhamah	Laam Lafz al-Jalalah Mufakhkhamah	لَام لَفْظ الجَلَالَة المُفَخَّمَة	lam_jalalah_tafkheem
+tajwid_ruling	laam_lafz_al_jalalah_muraqqaqah	Laam Lafz al-Jalalah Muraqqaqah	لَام لَفْظ الجَلَالَة المُرَقَّقَة	lam_jalalah_tarqeeq
+tajwid_ruling	madd_al_badal_washibh_al_badal	Madd al-Badal Washibh al-Badal	مَدّ البَدَل وَشِبْه البَدَل	madd_badal
+tajwid_ruling	madd_al_iwad_an_al_tanwin	Madd al-Iwad An al-Tanwin	مَدّ العِوَض عَن التَّنْوِين	madd_iwad
+tajwid_ruling	madd_al_silah_sughra	Madd al-Silah Sughra	مَدّ الصِّلَة الصُّغْرَى	
+tajwid_ruling	madd_jaiz_munfasil	Madd Jaiz Munfasil	المَدّ الجَائِز المُنْفَصِل	
+tajwid_ruling	madd_lazim_harfi	Madd Lazim Harfi	المَدّ اللَّازِم الحَرْفِيّ	
+tajwid_ruling	madd_lazim_kalimi_mukhaffaf	Madd Lazim Kalimi Mukhaffaf	المَدّ اللَّازِم الكَلِمِيّ المُخَفَّف	
+tajwid_ruling	madd_lazim_kalimi_muthaqqal	Madd Lazim Kalimi Muthaqqal	المَدّ اللَّازِم الكَلِمِيّ المُثَقَّل	
+tajwid_ruling	madd_tabii_kalimi	Madd Tabii Kalimi	المَدّ الطَّبِيعِيّ الكَلِمِيّ	madd_tabee_kalimi
+tajwid_ruling	madd_wajib_muttasil	Madd Wajib Muttasil	المَدّ الوَاجِب المُتَّصِل	
+tajwid_ruling	martabat_al_tafkhim_nisbi_khamisah_ind_ibn_al_jazari	Martabat al-Tafkhim Nisbi Khamisah Ind Ibn al-Jazari	مَرْتَبَة التَّفْخِيم النِّسْبِيّ الخَامِسَة عِنْدَ اِبْن الجَزَرِيّ	tafkheem_rank_5_relative_jazari
+tajwid_ruling	martabat_al_tafkhim_nisbi_thalithah_ind_ibn_al_tahhan	Martabat al-Tafkhim Nisbi Thalithah Ind Ibn al-Tahhan	مَرْتَبَة التَّفْخِيم النِّسْبِيّ الثَّالِثَة عِنْدَ اِبْن الطَّحَّان	tafkheem_rank_3_relative_tahhan
+tajwid_ruling	martabat_al_tafkhim_rabiah_ind_ibn_al_jazari	Martabat al-Tafkhim Rabiah Ind Ibn al-Jazari	مَرْتَبَة التَّفْخِيم الرَّابِعَة عِنْدَ اِبْن الجَزَرِيّ	tafkheem_rank_4_jazari
+tajwid_ruling	martabat_al_tafkhim_thalithah_ind_ibn_al_jazari	Martabat al-Tafkhim Thalithah Ind Ibn al-Jazari	مَرْتَبَة التَّفْخِيم الثَّالِثَة عِنْدَ اِبْن الجَزَرِيّ	tafkheem_rank_3_jazari
+tajwid_ruling	martabat_al_tafkhim_thaniyah_ind_ibn_al_jazari	Martabat al-Tafkhim Thaniyah Ind Ibn al-Jazari	مَرْتَبَة التَّفْخِيم الثَّانِيَة عِنْدَ اِبْن الجَزَرِيّ	tafkheem_rank_2_jazari
+tajwid_ruling	martabat_al_tafkhim_thaniyah_ind_ibn_al_tahhan	Martabat al-Tafkhim Thaniyah Ind Ibn al-Tahhan	مَرْتَبَة التَّفْخِيم الثَّانِيَة عِنْدَ اِبْن الطَّحَّان	tafkheem_rank_2_tahhan
+tajwid_ruling	martabat_al_tafkhim_ula_ind_ibn_al_jazari	Martabat al-Tafkhim Ula Ind Ibn al-Jazari	مَرْتَبَة التَّفْخِيم الأُولَى عِنْدَ اِبْن الجَزَرِيّ	tafkheem_rank_1_jazari
+tajwid_ruling	martabat_al_tafkhim_ula_ind_ibn_al_tahhan	Martabat al-Tafkhim Ula Ind Ibn al-Tahhan	مَرْتَبَة التَّفْخِيم الأُولَى عِنْدَ اِبْن الطَّحَّان	tafkheem_rank_1_tahhan
+tajwid_ruling	meem_mushaddadah	Meem Mushaddadah	المِيم المُشَدَّدَة	
+tajwid_ruling	noon_mushaddadah	Noon Mushaddadah	النُّون المُشَدَّدَة	
+tajwid_ruling	qalb_al_noon_sakinah	Qalb al-Noon Sakinah	قَلْب النُّون السَّاكِنَة	iqlab_noon
+tajwid_ruling	qalb_al_tanwin	Qalb al-Tanwin	قَلْب التَّنْوِين	iqlab_tanween
+tajwid_ruling	qalqalah_kubra	Qalqalah Kubra	القَلْقَلَة الكُبْرَى	
+tajwid_ruling	qalqalah_mutatarrifah	Qalqalah Mutatarrifah	القَلْقَلَة المُتَطَرِّفَة	
+tajwid_ruling	qalqalah_sughra	Qalqalah Sughra	القَلْقَلَة الصُّغْرَى	
+tajwid_ruling	tafkhim_al_raa	Tafkhim al-Raa	تَفْخِيم الرَّاء	raa_tafkheem
+tajwid_ruling	tarqiq_al_raa	Tarqiq al-Raa	تَرْقِيق الرَّاء	raa_tarqeeq
+tajwid_ruling	waw_layyinah	Waw Layyinah	الوَاو اللَّيِّنَة	leen_waw
+tajwid_ruling	yaa_layyinah	Yaa Layyinah	اليَاء اللَّيِّنَة	leen_yaa
+tariq	durrah	Durrah		al_durrah_al_mudiyyah,durrat_al_mudiyyah,tariq_al_durrah
+tariq	shatibiyyah	Shatibiyyah		hirz_al_amani,shatibi,shatibiyah,tariq_al_shatibiyyah
+tariq	taysir	Taysir		tariq_al_taysir
+tariq	tayyibat_al_nashr	Tayyibat Al Nashr		al_tayyibah,tariq_al_tayyibah,taybah,tayyiba,tayyibah

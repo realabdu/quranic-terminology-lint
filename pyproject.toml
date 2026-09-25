@@ -4,12 +4,12 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "quranic-terminology-lint"
-version = "0.1.0"
-description = "Offline Quranic terminology checks for code, CI, and pre-commit"
+version = "0.2.0"
+description = "Checks that names in code follow the Quranic vocabulary naming standard"
 requires-python = ">=3.10"
 readme = "README.md"
-license = "MIT AND CC-BY-4.0"
-license-files = ["LICENSE", "NOTICE"]
+license = "MIT"
+license-files = ["LICENSE"]
 dependencies = []
 
 [project.scripts]
@@ -26,7 +26,7 @@ where = ["src"]
 namespaces = false
 
 [tool.setuptools.package-data]
-quranic_terminology_lint = ["vendor/LICENSE", "vendor/provenance.json", "vendor/LICENSES/*.txt", "vendor/data/*.json", "vendor/data/registries/*.tsv", "vendor/scripts/*.py"]
+quranic_terminology_lint = ["terms/*.tsv"]
 
 [tool.setuptools.exclude-package-data]
 "*" = ["**/__pycache__/*", "**/*.pyc"]
