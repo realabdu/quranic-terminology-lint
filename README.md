@@ -6,81 +6,66 @@ standard. Add it to pre-commit once and every commit is checked: `aya_number`,
 the rule behind it.
 
 ```text
-Quranic terminology · 12 files · 3 errors · 1 warnings
-
-Errors
-Found       Preferred  Rule  Count
-aya         ayah       019       4
-tajweed     tajwid     021       2
-al_fatihah  fatihah    031       1
-
-Warnings (do not block)
-Found     Preferred                     Rule  Count
-ayah_idx  ayah_number or ayah_position  069       1
+src/model.ts:12: error getSuraNo → getSurahNumber (rule 068: Reference numbers)
+src/model.ts:18: error tajweed_rules → tajwid_rules (rule 021: Long vowels)
 ```
 
-It runs offline, has no dependencies, and needs Python 3.10+. It only edits
-files when you ask it to fix them.
+It runs offline, has no dependencies, and needs Python 3.10+. Check-only is
+the default. Findings show the file, line, full suggested name in the original
+case style, and the rule. Suggestions are terminology corrections, not proof
+that a rename is compatible with an external API.
 
 ## Set up
 
 Add one of the two hooks to your project's `.pre-commit-config.yaml`, then run
 `pre-commit install`. `pre-commit autoupdate` moves you to the latest release.
 
-**Check only.** A commit with an error is stopped, and the table says what to
-rename. Nothing is changed for you.
+**Check only.** A commit with an error is stopped. Files are unchanged.
 
 ```yaml
 repos:
   - repo: https://github.com/realabdu/quranic-terminology-lint
-    rev: v0.2.0
+    rev: v0.2.1
     hooks:
       - id: quranic-terminology
 ```
 
-**Check and fix.** Also renames, in place and in each name's own style, what
-can be renamed without breaking anything. The commit still stops so you can
-review the change and stage it.
+**Check and fix prose.** Use this hook to also correct plain words such as
+`the aya list` → `the ayah list`. Review and stage the changes before retrying
+the commit.
 
 ```yaml
       - id: quranic-terminology-fix
 ```
 
-Like Ruff and RuboCop, the fix separates safe renames from unsafe ones, and
-like darker and SonarQube it holds new code to the standard without forcing a
-rename of old code:
+`--fix` corrects plain words in Python comments and plain Markdown/text
+(`.md`, `.txt`). Code identifiers are reported but never automatically renamed,
+even when newly added or moved between files. Use your editor's rename
+refactoring for identifiers.
 
-- **Prose**: plain words in documentation and comments (`the aya list` →
-  `the ayah list`). Names in `backticks` or code blocks are left alone.
-- **New names**: a code name that is not in the last commit, when every place
-  it appears is one the fix edits. Write `getSuraNo` and commit
-  `getSurahNumber`.
-- **Everything else is reported, not renamed**: a name already committed, or
-  one repeated in a string or in a file the fix cannot reach, because other
-  code, data or a library's users may depend on it. Rename it with your
-  editor's rename refactoring. Strings, JSON and CSV are never edited.
+The prose fixer skips fenced and indented examples, block quotes, Markdown
+lines containing backticks, camelCase names, strings, data and compatibility
+paths. Documentation with HTML, template braces or front matter is left alone.
+MDX, XML, other documentation formats and comments in other languages are
+checked but not automatically corrected. Use `exclude` for copied texts and
+notices that must remain exactly as supplied.
 
-`--unsafe-fixes` also renames existing names. Use it only on application code
-with tests, and review the diff: a text rename cannot keep a name in sync with
-a string that repeats it, and a renamed export breaks everything that uses it.
+**Explicit unsafe code renames.** `--unsafe-fixes` also applies textual code
+renames in Python and simple JavaScript/TypeScript (`.js`, `.ts`, `.mjs`, `.cjs`).
+This can break imports, exports, bindings and references stored in strings.
+It does not perform scope analysis or prevent name collisions. Review the diff
+and run your tests; this is not a refactoring engine.
 
 ```yaml
       - id: quranic-terminology-fix
         args: [--unsafe-fixes]
 ```
 
-Measured on a fresh clone of the quran-meta TypeScript library (430 tests):
-
-| | Changed | Build | Type check | Tests |
-| --- | --- | --- | --- | --- |
-| Before | | passes | passes | 430 pass |
-| `--fix` on the existing code | 841 words in docs and comments; no code, no strings | passes | passes | 430 pass |
-| `--fix` on a new function and its test | `getSuraNo(ayaKey)` → `getSurahNumber(ayahKey)` | passes | passes | 431 pass |
-| `--unsafe-fixes` | 2,920 names, including 15 of 64 exports | passes | 73 errors | 14 fail |
-
-File names are never renamed. The new function above lives in
-`suraTools.ts`, so the linter keeps reporting the `sura` in its import path
-until you rename the file yourself.
+Files with unsupported or ambiguous syntax are left unchanged: this includes
+JavaScript template literals, regex/division syntax, unfinished strings, JSX/TSX
+and other languages. Python interpolation and malformed syntax are handled
+conservatively; exact fix availability can differ between Python versions.
+Strings, JSON/CSV/TSV data and file names are not renamed in either fix mode.
 
 To check the whole project once, run
 `pre-commit run quranic-terminology --all-files`.
@@ -88,15 +73,41 @@ To check the whole project once, run
 To run it directly or in CI:
 
 ```sh
-pip install git+https://github.com/realabdu/quranic-terminology-lint@v0.2.0
-quranic-terminology-lint            # the paths in .terminology.json, or the current directory
-quranic-terminology-lint src --by file
-quranic-terminology-lint src --json
-quranic-terminology-lint src --fix  # safe renames in place; review with git diff
+pip install git+https://github.com/realabdu/quranic-terminology-lint@v0.2.1
+quranic-terminology-lint                # configured paths, or the current directory
+quranic-terminology-lint src --by table # group findings by terminology rule
+quranic-terminology-lint src --json     # complete results, including suggested_identifier
+quranic-terminology-lint src --fix      # supported prose only
+quranic-terminology-lint src --unsafe-fixes # explicit textual code renames
 ```
 
-Exit status: 0 no errors (warnings do not block), 1 errors found, 2 a
-configuration or file problem.
+The default report shows 20 findings with locations; the table shows 10 rows.
+Use `--limit` to show more. JSON always includes every finding. Exit status:
+0 no errors (warnings do not block), 1 errors found, 2 a configuration or file
+problem. A fix reports the original findings and still returns 1 when errors
+were found, so you can review edits and run the check again.
+
+## Adopting in an existing project
+
+Start with a source directory, inspect the findings, and record exceptions for
+external APIs, legacy schemas, generated files and copied datasets. A term can
+violate this naming standard while still being required by a dependency.
+
+```json
+{
+  "paths": ["src"],
+  "exclude": ["src/generated/**", "data/**", "QuranCorpus/**"],
+  "compatibility": ["src/legacy/**"],
+  "allow_gloss_in": ["src/api/**"],
+  "external_names": ["\\bChapters\\b"],
+  "_comment": "Chapters is an export owned by our Quran API dependency."
+}
+```
+
+`paths` sets the direct CLI default. Pre-commit passes staged file names, which
+override it; use the hook's `files: ^src/` filter to restrict staged checks to
+that directory. `exclude`, `compatibility`, and the naming exceptions apply to
+both modes.
 
 ## What it checks
 
@@ -125,8 +136,9 @@ The other rules govern how a name is derived from vocalised Arabic, or how
 concepts are modelled. They apply when a term is added to the term files, not
 to code.
 
-**Errors** are certain: a known misspelling of a Quranic term. **Warnings** are
-guesses to review, and never block a commit.
+**Errors** match a spelling or alias covered by the naming standard. They can
+still need an exception for an unrelated meaning or external API. **Warnings**
+are suggestions to review and never block a commit.
 
 ### What it leaves alone
 
@@ -165,7 +177,7 @@ Commit a `.terminology.json` at the project root:
 | --- | --- |
 | `paths` | What to check when no paths are given. |
 | `exclude` | Files that are never read. |
-| `ignore_words` | A word with an unrelated meaning in this project. |
+| `ignore_words` | A word or compound with an unrelated meaning, including inside camelCase/snake_case identifiers and its `s` plural. |
 | `allow_gloss_in` | Files that must use English equivalents, such as a published API that says `verse`. |
 | `compatibility` | Names you cannot rename without a migration. Reported, but they do not block. |
 | `external_names` | Regular expressions for names someone else owns, such as a publisher's column `aya_text_emlaey`. |

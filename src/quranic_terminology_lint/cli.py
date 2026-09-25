@@ -12,7 +12,7 @@ import sys
 
 from . import fix as fixing, rules
 from .context import (CODE_SUFFIXES, MAX_BYTES, PROSE_SUFFIXES, SKIP_DIRS,
-                      data_names, mask_references, prose_ranges, string_ranges, suffix_of)
+                      data_names, editable_prose, mask_references, prose_ranges, string_ranges, suffix_of)
 
 CONFIG_NAME = ".terminology.json"
 CONFIG_KEYS = {"paths", "exclude", "ignore_words", "allow_gloss_in", "compatibility",
@@ -142,6 +142,7 @@ def scan(files, terms, cfg, fix=False):
         spans = {} if prose else prose_ranges(text, suffix)
         names = data_names(text, suffix)
         literals = string_ranges(text, suffix) if fix and not prose else {}
+        editable = editable_prose(text, suffix) if fix else {}
         code_spans = fixing.code_spans(text, fenced=prose) if fix else {}
         text, references = mask_references(text, prose, external=cfg["external"], suffix=suffix)
         counted["reference_literals"] += references
@@ -161,6 +162,7 @@ def scan(files, terms, cfg, fix=False):
             keys = merged(names.get(number, ())) if names is not None else None
             strings = merged(literals.get(number, ())) if literals is not None else None
             ticks = merged(code_spans.get(number, ()))
+            safe_notes = merged(editable.get(number, ()))
             for column, identifier in rules.identifiers(line):
                 if keys is not None and not inside(keys, column):
                     continue
@@ -172,21 +174,32 @@ def scan(files, terms, cfg, fix=False):
                         continue
                     found.pop("gloss", None)
                     reported.append(found)
+                corrections = [f for f in reported if rules.fixable(f)]
+                suggestion = rules.fix(identifier, corrections) if corrections else None
+                for found in reported:
                     slot = (path, number, identifier, found["found"], tuple(found["rules"]))
                     if slot in findings:
                         findings[slot]["count"] += 1
                         continue
                     findings[slot] = {"file": shown(path), "line": number, "identifier": identifier,
-                                      **found, "known": known, "count": 1}
-                if not fix or known or strings is None or inside(strings, column):
+                                      **found, "known": known, "count": 1,
+                                      "suggested_identifier": suggestion if rules.fixable(found) else None}
+                safe_prose = inside(safe_notes, column)
+                if not fix or known or (strings is None and not safe_prose):
+                    continue
+                if strings is not None and inside(strings, column):
                     continue  # Strings hold data, keys and paths: never edited.
-                renamed = rules.fix(identifier, [f for f in reported if rules.fixable(f)])
+                renamed = suggestion
                 if not renamed:
                     continue
                 if in_note:  # A word for people. In `backticks` it names code: leave it.
                     if inside(ticks, column) or not fixing.plain_word(identifier, renamed):
                         continue
-                renames.append(fixing.Rename(path, number, column, identifier, renamed, in_note))
+                # Prose detected heuristically may really be executable code or literal data.
+                if prose and not safe_prose:
+                    continue
+                renames.append(fixing.Rename(path, number, column, identifier, renamed,
+                                            safe_prose))
     return sorted(findings.values(), key=lambda f: (f["file"], f["line"], f["identifier"])), counted, renames
 
 
@@ -226,22 +239,22 @@ def detailed(findings, summary, limit):
     for f in findings[:limit]:
         where = " (compatibility)" if f["known"] else ""
         times = f" ×{f['count']}" if f["count"] > 1 else ""
-        print(f"{f['file']}:{f['line']}: {f['severity']}{where} {f['found']} → {f['preferred']} "
-              f"in {f['identifier']}{times} ({f['message']})")
+        change = (f"{f['identifier']} → {f['suggested_identifier']}" if f["suggested_identifier"]
+                  else f"{f['found']} → {f['preferred']} in {f['identifier']}")
+        print(f"{f['file']}:{f['line']}: {f['severity']}{where} {change}{times} ({f['message']})")
     if len(findings) > limit:
         print(f"… and {len(findings) - limit} more (use --limit or --json)")
     print(f"{summary['errors']} errors, {summary['warnings']} warnings in {summary['files_scanned']} files")
 
 
-def report_fixes(applied, held, reason, fixed_files):
+def report_fixes(applied, held, fixed_files):
     if applied:
         print(f"\nFixed {len(applied)} names in {fixed_files} files. Review the changes, then stage them.")
     if held:
         names = sorted({r.old for r in held})
         shown_names = ", ".join(names[:5]) + (f" and {len(names) - 5} more" if len(names) > 5 else "")
-        why = (f"This is {reason}." if reason else
-               "They are in the last commit, or also appear where a fix cannot reach (a string, "
-               "another file), so other code may depend on them.")
+        why = ("Code names may be imports, public APIs, or collide with other bindings. "
+               "Automatic code renames require explicit unsafe opt-in.")
         print(f"Not renamed: {shown_names}. {why} "
               "Rename them with your editor's rename refactoring, or run with --unsafe-fixes.")
 
@@ -251,17 +264,17 @@ def main(argv=None):
     parser.add_argument("paths", nargs="*")
     parser.add_argument("--config")
     parser.add_argument("--json", action="store_true")
-    parser.add_argument("--by", choices=("table", "file"), default="table")
+    parser.add_argument("--by", choices=("table", "file"), default="file")
     parser.add_argument("--limit", type=int, default=None,
-                        help="rows to show (default: 10 in the table, all with --by file)")
+                        help="rows to show (default: 20 by file, 10 in the table)")
     parser.add_argument("--fix", action="store_true",
-                        help="rename, in place, words in prose and names new since the last commit")
+                        help="correct plain words in supported documentation and Python comments")
     parser.add_argument("--unsafe-fixes", action="store_true",
-                        help="with --fix, also rename existing names other code may depend on")
+                        help="also text-rename code in supported syntax; may break bindings, APIs and references")
     parser.add_argument("--version", action="version", version=version("quranic-terminology-lint"))
     args = parser.parse_args(argv)
     try:
-        limit = args.limit if args.limit is not None else (10 if args.by == "table" else sys.maxsize)
+        limit = args.limit if args.limit is not None else (10 if args.by == "table" else 20)
         if limit < 1:
             raise ValueError("--limit must be positive")
         cfg = load_config(find_config(args.config))
@@ -272,7 +285,7 @@ def main(argv=None):
             print("note: no eligible files (excluded, unsupported, or symlinked)", file=sys.stderr)
         args.fix = args.fix or args.unsafe_fixes
         findings, counted, renames = scan(files, terms, cfg, fix=args.fix)
-        applied, held, reason = fixing.select(renames, args.unsafe_fixes)
+        applied, held = fixing.select(renames, args.unsafe_fixes)
         fixed_files = fixing.write(applied) if applied else 0
         live = [f for f in findings if not f["known"]]
         summary = {
@@ -296,7 +309,7 @@ def main(argv=None):
         else:
             (table if args.by == "table" else detailed)(findings, summary, limit)
             if args.fix:
-                report_fixes(applied, held, reason, fixed_files)
+                report_fixes(applied, held, fixed_files)
             if skipped:
                 more = f" and {len(skipped) - 3} more" if len(skipped) > 3 else ""
                 print(f"skipped {len(skipped)} files larger than {MAX_BYTES // 1_000_000} MB: "

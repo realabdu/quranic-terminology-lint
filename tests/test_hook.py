@@ -42,8 +42,8 @@ def test_real_pre_commit(tmp_path):
     run(consumer, "git", "add", ".")
     rejected = run(consumer, "git", "commit", "-m", "Rejected", expected=1)
     output = rejected.stdout + rejected.stderr
-    assert "Count" in output
-    assert any(line.split() == ["sura", "surah", "019", "1"] for line in output.splitlines())
+    assert "a space.py:1: error sura → surah" in output
+    assert model.read_text() == "sura = 1\n"
     # A clean working copy must not hide an invalid staged version.
     model.write_text("surah = 1\n")
     run(consumer, "git", "commit", "-m", "Still rejected", expected=1)
@@ -86,11 +86,15 @@ def test_real_pre_commit_fix(tmp_path):
     (consumer / ".pre-commit-config.yaml").write_text(
         f"repos:\n  - repo: '{hook}'\n    rev: {rev}\n    hooks:\n      - id: quranic-terminology-fix\n")
     model = consumer / "model.py"
-    model.write_text("aya_no = 1\n")
+    model.write_text("# the aya list\nayah_number = 1\n")
     run(consumer, "git", "add", ".")
     run(consumer, "pre-commit", "install")
     rejected = run(consumer, "git", "commit", "-m", "Fixed but stopped", expected=1)
     assert "Fixed 1 names" in rejected.stdout + rejected.stderr
-    assert model.read_text() == "ayah_number = 1\n"
+    assert model.read_text() == "# the ayah list\nayah_number = 1\n"
     run(consumer, "git", "add", ".")
     run(consumer, "git", "commit", "-m", "Reviewed")
+    model.write_text("from quran import Chapters\n")
+    run(consumer, "git", "add", ".")
+    run(consumer, "git", "commit", "-m", "Import needs review", expected=1)
+    assert model.read_text() == "from quran import Chapters\n"

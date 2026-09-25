@@ -10,7 +10,7 @@
   stages: [pre-commit, pre-merge-commit, pre-push, manual]
 - id: quranic-terminology-fix
   name: Quranic terminology (fix)
-  description: Rename names that break the Quranic vocabulary naming standard
+  description: Check names and correct supported prose; code renames require --unsafe-fixes
   entry: quranic-terminology-lint --fix
   language: python
   types: [text]

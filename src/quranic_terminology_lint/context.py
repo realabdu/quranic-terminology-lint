@@ -179,7 +179,7 @@ def prose_ranges(text, suffix):
     return ranges
 
 
-def _python_prose(text):
+def _python_prose(text, comments_only=False):
     lines = text.splitlines(keepends=True)
     ranges = {}
     try:
@@ -187,7 +187,7 @@ def _python_prose(text):
             if token.type == tokenize.ERRORTOKEN and not token.string.isspace():
                 return None
             if token.type == tokenize.COMMENT or (
-                    token.type == tokenize.STRING and not re.match(r"(?i)^[rub]*[ft]", token.string)
+                    not comments_only and token.type == tokenize.STRING and not re.match(r"(?i)^[rub]*[ft]", token.string)
                     and SPACED.search(token.string)):
                 first, last = token.start[0], token.end[0]
                 for row in range(first, last + 1):
@@ -197,6 +197,18 @@ def _python_prose(text):
     except (tokenize.TokenError, SyntaxError):
         return None
     return ranges
+
+
+def editable_prose(text, suffix):
+    """Only prose whose location can be established independently of heuristics."""
+    if suffix == ".py":
+        return _python_prose(text, comments_only=True) or {}
+    if suffix in {".md", ".txt"}:
+        # Embedded HTML, template expressions and front matter need a parser.
+        if "<" in text or "{" in text or text.startswith(("---", "+++")):
+            return {}
+        return {number: [(0, len(line))] for number, line in enumerate(text.splitlines(), 1)}
+    return {}
 
 
 JSON_KEY = re.compile(r'"(?:[^"\\\n]|\\.)*"(?=\s*:)')
@@ -227,6 +239,10 @@ def string_ranges(text, suffix):
         try:
             lines = text.splitlines(keepends=True)
             for token in tokenize.generate_tokens(io.StringIO(text).readline):
+                if token.type == tokenize.ERRORTOKEN and not token.string.isspace():
+                    return None
+                if tokenize.tok_name[token.type].startswith(("FSTRING", "TSTRING")):
+                    return None  # Interpolation needs semantic references, not a text rename.
                 if token.type == tokenize.STRING or tokenize.tok_name[token.type].startswith("FSTRING"):
                     first, last = token.start[0], token.end[0]
                     for row in range(first, last + 1):
@@ -235,8 +251,36 @@ def string_ranges(text, suffix):
                         ranges.setdefault(row, []).append((start, end))
             return ranges
         except (tokenize.TokenError, SyntaxError):
-            pass
-    if suffix in {".json", ".csv", ".tsv"}:
-        return None  # Data files are never fixed.
-    return {number: quoted_spans(line, open_ended=True)
-            for number, line in enumerate(text.splitlines(), 1)}
+            return None
+    if suffix not in {".js", ".ts", ".mjs", ".cjs"}:
+        return None  # Data, markup and unsupported language syntax are never fixed.
+    # Fail closed on templates, regex/division ambiguity and unfinished strings.
+    # Plain JS/TS quoted strings and comments are sufficient for simple unsafe renames.
+    ranges, in_block = {}, False
+    for number, line in enumerate(text.splitlines(), 1):
+        spans, i = [], 0
+        while i < len(line):
+            if in_block:
+                end = line.find("*/", i)
+                if end < 0:
+                    break
+                in_block, i = False, end + 2
+            elif line.startswith("//", i):
+                break
+            elif line.startswith("/*", i):
+                in_block, i = True, i + 2
+            elif line[i] in "`/":
+                return None
+            elif line[i] in "\"'":
+                start, quote = i, line[i]
+                i += 1
+                while i < len(line) and line[i] != quote:
+                    i += 2 if line[i] == "\\" else 1
+                if i >= len(line):
+                    return None
+                i += 1
+                spans.append((start, i))
+            else:
+                i += 1
+        ranges[number] = spans
+    return None if in_block else ranges
