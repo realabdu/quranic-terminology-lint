@@ -27,8 +27,8 @@ files when you ask it to fix them.
 Add one of the two hooks to your project's `.pre-commit-config.yaml`, then run
 `pre-commit install`. `pre-commit autoupdate` moves you to the latest release.
 
-**Check only (recommended).** A commit with an error is stopped, and the table
-says what to rename. Nothing is changed for you.
+**Check only.** A commit with an error is stopped, and the table says what to
+rename. Nothing is changed for you.
 
 ```yaml
 repos:
@@ -76,10 +76,11 @@ Measured on a fresh clone of the quran-meta TypeScript library (430 tests):
 | Before | | passes | passes | 430 pass |
 | `--fix` on the existing code | 841 words in docs and comments; no code, no strings | passes | passes | 430 pass |
 | `--fix` on a new function and its test | `getSuraNo(ayaKey)` → `getSurahNumber(ayahKey)` | passes | passes | 431 pass |
-| `--unsafe-fixes` | 3,516 names, including 12 exported ones | passes | 73 errors | 14 fail |
+| `--unsafe-fixes` | 2,920 names, including 15 of 64 exports | passes | 73 errors | 14 fail |
 
-A file name is never renamed. In the example above, `suraTools.ts` is still
-reported so you can rename the file yourself.
+File names are never renamed. The new function above lives in
+`suraTools.ts`, so the linter keeps reporting the `sura` in its import path
+until you rename the file yourself.
 
 To check the whole project once, run
 `pre-commit run quranic-terminology --all-files`.
