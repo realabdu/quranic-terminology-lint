@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 def test_real_pre_commit(tmp_path):
     hook = tmp_path / "hook"
     shutil.copytree(ROOT, hook, ignore=shutil.ignore_patterns(
-        ".git", ".venv", "__pycache__", ".pytest_cache", "*.egg-info", "dist", "build"))
+        ".git", ".venv", "__pycache__", ".pytest_cache", "*.egg-info", "dist", "build", "release-review"))
     env = dict(os.environ, PRE_COMMIT_HOME=str(tmp_path / "cache"))
     def run(cwd, *args, expected=0):
         if args[0] == "pre-commit":
@@ -63,10 +63,10 @@ def test_real_pre_commit(tmp_path):
     run(consumer, "git", "commit", "-m", "Deletion")
 
 
-def test_real_pre_commit_fix(tmp_path):
+def test_real_pre_commit_unsafe_fix(tmp_path):
     hook = tmp_path / "hook"
     shutil.copytree(ROOT, hook, ignore=shutil.ignore_patterns(
-        ".git", ".venv", "__pycache__", ".pytest_cache", "*.egg-info", "dist", "build"))
+        ".git", ".venv", "__pycache__", ".pytest_cache", "*.egg-info", "dist", "build", "release-review"))
     env = dict(os.environ, PRE_COMMIT_HOME=str(tmp_path / "cache"))
     def run(cwd, *args, expected=0):
         if args[0] == "pre-commit":
@@ -84,17 +84,24 @@ def test_real_pre_commit_fix(tmp_path):
     rev = run(hook, "git", "rev-parse", "HEAD").stdout.strip()
     consumer = tmp_path / "consumer"
     (consumer / ".pre-commit-config.yaml").write_text(
-        f"repos:\n  - repo: '{hook}'\n    rev: {rev}\n    hooks:\n      - id: quranic-terminology-fix\n")
+        f"repos:\n  - repo: '{hook}'\n    rev: {rev}\n    hooks:\n      - id: quranic-terminology-unsafe-fix\n")
     model = consumer / "model.py"
-    model.write_text("# the aya list\nayah_number = 1\n")
+    model.write_text("# the aya list\naya_number = 1\n")
     run(consumer, "git", "add", ".")
+    config = consumer / ".pre-commit-config.yaml"
+    current_config = config.read_text()
+    config.write_text(current_config.replace("quranic-terminology-unsafe-fix", "quranic-terminology-fix"))
+    removed = run(consumer, "pre-commit", "run", "--all-files", expected=1)
+    assert "is not present in repository" in removed.stdout + removed.stderr
+    assert model.read_text() == "# the aya list\naya_number = 1\n"
+    config.write_text(current_config)
     run(consumer, "pre-commit", "install")
     rejected = run(consumer, "git", "commit", "-m", "Fixed but stopped", expected=1)
-    assert "Fixed 1 names" in rejected.stdout + rejected.stderr
+    assert "Fixed 2 names" in rejected.stdout + rejected.stderr
     assert model.read_text() == "# the ayah list\nayah_number = 1\n"
     run(consumer, "git", "add", ".")
     run(consumer, "git", "commit", "-m", "Reviewed")
     model.write_text("from quran import Chapters\n")
     run(consumer, "git", "add", ".")
-    run(consumer, "git", "commit", "-m", "Import needs review", expected=1)
-    assert model.read_text() == "from quran import Chapters\n"
+    run(consumer, "git", "commit", "-m", "Unsafe import rename", expected=1)
+    assert model.read_text() == "from quran import Surahs\n"

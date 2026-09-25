@@ -8,10 +8,10 @@
   require_serial: true
   minimum_pre_commit_version: '3.2.0'
   stages: [pre-commit, pre-merge-commit, pre-push, manual]
-- id: quranic-terminology-fix
-  name: Quranic terminology (fix)
-  description: Check names and correct supported prose; code renames require --unsafe-fixes
-  entry: quranic-terminology-lint --fix
+- id: quranic-terminology-unsafe-fix
+  name: Quranic terminology (unsafe fix)
+  description: Apply supported terminology replacements; code renames may break imports, APIs and bindings
+  entry: quranic-terminology-lint --unsafe-fixes
   language: python
   types: [text]
   pass_filenames: true
