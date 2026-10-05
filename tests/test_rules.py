@@ -26,10 +26,15 @@ def check(identifier, prose=False):
     ("AlBaqarah", "al_baqarah", "baqarah", "031"),
     ("rasm_al_uthmani", "rasm_al_uthmani", "rasm_uthmani", "032"),
     ("rubu_hizb", "rubu_hizb", "rubu_al_hizb", "033"),
-    ("word_timing", "word_timing", "word_timestamp", "046"),
+    ("waqf_jaiz", "waqf_jaiz", "waqf_jaiz_mustawi_al_tarafayn", "046"),
     ("ayat", "ayat", "ayahs", "049"),
     ("suwar", "suwar", "surahs", "049"),
     ("surah_no", "surah_no", "surah_number", "068"),
+    ("sawtam", "sawtam", "phoneme", "001"),
+    ("sifa", "sifa", "sifah", "019"),
+    ("sifat", "sifat", "sifahs", "049"),
+    ("silat_mim_al_jam", "silat_mim_al_jam", "silat_meem_al_jama", "001"),
+    ("silat_meem_al_jam", "silat_meem_al_jam", "silat_meem_al_jama", "026"),
 ])
 def test_errors(identifier, found, preferred, rule):
     assert (found, preferred, [rule], "error") in check(identifier)
@@ -38,7 +43,9 @@ def test_errors(identifier, found, preferred, rule):
 @pytest.mark.parametrize("identifier,rule", [
     ("waqf_type", "050"),
     ("ayah_idx", "069"),
-    ("hafs_word_timestamp", "073"),
+    ("hafs_word_timing", "073"),
+    ("murattal_letter_timings", "073"),
+    ("warsh_an_nafi_phoneme_timing", "073"),
     ("srh", "clear-names"),
     ("qirāʾah", "009"),
     ("qira'ah", "009"),
@@ -49,13 +56,18 @@ def test_warnings(identifier, rule):
 
 def test_plural_keeps_number():
     assert check("suras") == [("suras", "surahs", ["019"], "error")]
-    assert check("word_timings") == [("word_timings", "word_timestamps", ["046"], "error")]
 
 
 @pytest.mark.parametrize("identifier", [
-    "ayah", "surahs", "ayahKey", "SurahNumber", "WORD_TIMESTAMP", "tajwid", "hamzat_al_wasl",
+    "ayah", "surahs", "ayahKey", "SurahNumber", "WORD_TIMING", "word_timings", "has_word_timings",
+    "word_timestamp", "word_timestamps", "WordTimestamp", "tajwid", "hamzat_al_wasl",
     "waqf_jaiz_mustawi_al_tarafayn", "waqfJaizMustawiAlTarafayn", "noon_sakinah", "small_meem",
     "aal_imran", "waqf_mark_type", "rubu_al_hizb", "asbab_al_nuzul", "makki", "kufi", "thumn_al_hizb",
+    # The four levels of audio timing, and what the two finest are measured in.
+    "ayah_timings", "letter_timings", "LetterTimings", "phoneme-timings", "getPhonemeTimings",
+    "phonemes", "sifah", "sifahs", "silat_meem_al_jama", "madd_al_silah",
+    # Two concepts carry `silah`, so alone it names neither; `qasr_silah` is a wajh.
+    "silah", "qasr_silah",
     # Ordinary code must stay quiet.
     "part", "pause", "timing", "reading", "stop", "line_no", "token_type", "font_index",
     "feel", "room", "sad", "elephant", "data", "format", "root", "teen", "ay", "sabs", "noor",

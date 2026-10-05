@@ -61,13 +61,14 @@ layout	Layout	borrowed		التَّخْطِيط
 lemma	Lemma	borrowed						
 letter	Letter	borrowed		الحَرْف	harf			
 letter_relation	Letter Relation	quranic		عَلَاقَة الحَرْفَيْن	alaqat_al_huruf,ilaqat_al_harfayn	relation_of_two_letters		
+letter_timing	Letter Timing	standard						
 line	Line	borrowed		السَّطْر				
 madani	Madani	quranic		مَدَنِيّ	madinan	medinan		
 madd	Madd	quranic		المَدّ	mad,madd_rule,mudud,mudood,madd_type	prolongation,lengthening		
 madd_al_badal	Madd al-Badal	quranic		مَدّ البَدَل	badal,mad_badal	substitution_madd		
 madd_al_iwad	Madd al-Iwad	quranic		مَدّ العِوَض	madd_al_ewad,madd_ewad,iwad,mad_iwad	compensation_madd		
 madd_al_lin	Madd al-Lin	quranic		مَدّ اللِّين	madd_leen,lin,leen,mad_leen	soft_madd		
-madd_al_silah	Madd al-Silah	quranic		مَدّ الصِّلَة	silah,madd_silah_sughra,madd_silah_kubra,mad_silah	pronoun_madd		
+madd_al_silah	Madd al-Silah	quranic		مَدّ الصِّلَة	madd_silah_sughra,madd_silah_kubra,mad_silah	pronoun_madd		
 madd_arid_li_al_sukun	Madd Arid lil-Sukun	quranic		المَدّ العَارِض لِلسُّكُون	madd_arid_lilsukun,madd_arid_lil_sukun,madd_arid,arid_lil_sukun,madd_aarid,madd_arid_lissukun	incidental_madd		
 madd_lazim	Madd Lazim	quranic		المَدّ اللَّازِم	madd_laazim,lazim,madd_lazim_kalimi,mad_lazim	necessary_madd		
 madd_munfasil	Madd Munfasil	quranic		المَدّ المُنْفَصِل	munfasil,madd_munfasil_jaiz,mad_munfasil	separated_madd		
@@ -101,6 +102,8 @@ orthographic_mark	Orthographic Mark	quranic		العَلَامَة الإِمْل
 page	Page	borrowed		الصَّفْحَة	safhah			
 part_of_speech	Part of Speech	borrowed		قِسْم الكَلِمَة	pos			
 particle	Particle	borrowed		حَرْف المَعْنَى				
+phoneme	Phoneme	borrowed		الصَّوْتَم	sawtam			
+phoneme_timing	Phoneme Timing	standard						
 qalqalah	Qalqalah	quranic		القَلْقَلَة	qalqalh	echoing		
 qiraah	Qiraah	quranic		القِرَاءَة		reading		
 qiraah_mark	Qiraah Mark	quranic		عَلَامَة القِرَاءَة				
@@ -132,6 +135,8 @@ saktah	Saktah	quranic		السَّكْتَة	sakt
 saktah_mark	Saktah Mark	quranic		عَلَامَة السَّكْتَة	alamat_al_sakt			
 seen_al_qiraah	Seen al-Qiraah	quranic		سِين القِرَاءَة	seen_reading,sin_qiraah			
 shaddah	Shaddah	quranic		الشَّدَّة	tashdeed,tashdid			
+sifah	Sifah	quranic		الصِّفَة	sifat_al_huruf		sifat	
+silat_meem_al_jama	Silat Meem al-Jama	quranic		صِلَة مِيم الجَمْع	silat_mim_al_jama,silat_mim_al_jam			
 small_meem	Small Meem	quranic		المِيم الصَّغِيرَة	iqlab_meem,meem_iqlab,meem_saghirah,mim_saghirah			
 small_noon	Small Noon	quranic		النُّون الصَّغِيرَة	noon_saghirah,nun_saghirah			
 small_waw	Small Waw	quranic		الوَاو الصَّغِيرَة	waw_saghirah			
@@ -189,4 +194,4 @@ word	Word	borrowed		الكَلِمَة	kalimah
 word_by_word_translation	Word by Word Translation	standard			wbw,word_by_word,wbw_translation,word_translation,wordbyword			
 word_key	Word Key	standard			wid,data_wid,word_ref,word_position_key			
 word_meanings	Word Meanings	borrowed		غَرِيب القُرْآن	gharib,word_meaning			
-word_timestamp	Word Timestamp	standard			word_alignment,word_segment_timing,timing_segment,audio_segment			word_timing
+word_timing	Word Timing	standard			word_alignment,word_segment_timing,timing_segment,audio_segment			
