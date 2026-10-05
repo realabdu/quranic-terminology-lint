@@ -132,12 +132,12 @@ from that name, so a finding names the rule that was broken.
 | 022 | The nisbah ending | `makkiyy` → `makki` |
 | 026 | Final hamzah and ayn after sukun | `rub_al_hizb` → `rubu_al_hizb` |
 | 030–033 | The definite article | `asbab_an_nuzul` → `asbab_al_nuzul`, `al_fatihah` → `fatihah`, `rasm_al_uthmani` → `rasm_uthmani`, `rubu_hizb` → `rubu_al_hizb` |
-| 046 | Deprecated names | `word_timing` → `word_timestamp` |
+| 046 | Deprecated names | `waqf_jaiz` → `waqf_jaiz_mustawi_al_tarafayn` |
 | 049 | Plurals add `s` | `ayat` → `ayahs`, `suras` → `surahs` |
 | 050 | `_type` is for mark types | `waqf_type` (warning) |
 | 055–057 | Numbering systems, personal and surah names | `qaloun` → `qalun`, `kufan` → `kufi` |
 | 068, 069 | `number` and `position` | `surah_no` → `surah_number`, `ayah_idx` (warning) |
-| 073 | Timing names do not include the recording | `hafs_word_timestamp` (warning) |
+| 073 | Timing names do not include the recording | `hafs_word_timing` (warning) |
 
 The other rules govern how a name is derived from vocalised Arabic, or how
 concepts are modelled. They apply when a term is added to the term files, not

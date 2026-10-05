@@ -35,7 +35,7 @@ def test_clean_and_offline(capsys, monkeypatch):
     def network_forbidden(*args, **kwargs):
         raise AssertionError("network accessed")
     monkeypatch.setattr(socket, "socket", network_forbidden)
-    status, result = run(capsys, "ayah = 1\nsurahs = []\nword_timestamp = 0\n")
+    status, result = run(capsys, "ayah = 1\nsurahs = []\nword_timing = 0\n")
     assert status == 0 and not result["findings"]
 
 
