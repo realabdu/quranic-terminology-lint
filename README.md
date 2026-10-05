@@ -25,7 +25,7 @@ Add one of the two hooks to your project's `.pre-commit-config.yaml`, then run
 ```yaml
 repos:
   - repo: https://github.com/realabdu/quranic-terminology-lint
-    rev: v0.3.0
+    rev: v0.4.0
     hooks:
       - id: quranic-terminology
 ```
@@ -35,7 +35,7 @@ repos:
 ```yaml
 repos:
   - repo: https://github.com/realabdu/quranic-terminology-lint
-    rev: v0.3.0
+    rev: v0.4.0
     hooks:
       - id: quranic-terminology-unsafe-fix
 ```
@@ -60,6 +60,13 @@ alone. Documentation with HTML, template braces or front matter is skipped.
 MDX, XML and other unsupported formats can produce findings without edits.
 Use `exclude` for copied texts and notices that must remain exactly as supplied.
 
+### Migrating from v0.3.0
+
+Version 0.4.0 names a word-level audio span `word_timing`, as rule 073 does.
+v0.3.0 reported `word_timing` and preferred `word_timestamp`; both are accepted
+now, so a project that already renamed keeps passing. A bare `silah` is no
+longer reported as `madd_al_silah`.
+
 ### Migrating from v0.2.1
 
 Version 0.3.0 removes the prose-only `--fix` option and the
@@ -81,7 +88,7 @@ To check the whole project once, run
 To run it directly or in CI:
 
 ```sh
-pip install git+https://github.com/realabdu/quranic-terminology-lint@v0.3.0
+pip install git+https://github.com/realabdu/quranic-terminology-lint@v0.4.0
 quranic-terminology-lint                # configured paths, or the current directory
 quranic-terminology-lint src --by table # group findings by terminology rule
 quranic-terminology-lint src --json     # complete results, including suggested_identifier
